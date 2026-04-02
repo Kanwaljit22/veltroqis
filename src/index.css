@@ -1,0 +1,78 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #0f172a;
+  --color-primary-foreground: #f8fafc;
+  --color-accent: #06b6d4;
+  --color-accent-hover: #0891b2;
+  --font-sans: 'Inter', system-ui, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: #f8fafc;
+  color: #0f172a;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Kanban drag styles */
+.dragging {
+  opacity: 0.5;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in {
+  animation: fadeIn 0.2s ease-out;
+}
+
+/* TipTap placeholder (see RichTextEditor) */
+.rich-text-editor .ProseMirror p.is-empty::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: rgb(148 163 184);
+  height: 0;
+  pointer-events: none;
+}
+
+.rich-text-editor .ProseMirror ul {
+  list-style-type: disc;
+  padding-left: 1.25rem;
+  margin: 0.25rem 0;
+}
+.rich-text-editor .ProseMirror ol {
+  list-style-type: decimal;
+  padding-left: 1.25rem;
+  margin: 0.25rem 0;
+}
+.rich-text-editor .ProseMirror li {
+  margin: 0.125rem 0;
+}
+.rich-text-editor .ProseMirror p {
+  margin: 0.25rem 0;
+}
+.rich-text-editor .ProseMirror strong {
+  font-weight: 600;
+}

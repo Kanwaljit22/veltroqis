@@ -1,0 +1,30 @@
+/* ── Geist Sans (variable, weight 100–900) ─────────────────────────────── */
+@font-face {
+  font-family: 'Geist';
+  src: url('../../node_modules/geist/dist/fonts/geist-sans/Geist-Variable.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ── Geist Mono (variable, weight 100–900) ─────────────────────────────── */
+@font-face {
+  font-family: 'Geist Mono';
+  src: url('../../node_modules/geist/dist/fonts/geist-mono/GeistMono-Variable.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/*
+ * Geist Fallback — metric-adjusted Arial that prevents layout shift while
+ * the variable font loads. Matches Geist's ascent/descent/size ratios.
+ */
+@font-face {
+  font-family: 'Geist Fallback';
+  src: local('Arial');
+  ascent-override: 86.02%;
+  descent-override: 19.76%;
+  line-gap-override: 0%;
+  size-adjust: 112.24%;
+}
