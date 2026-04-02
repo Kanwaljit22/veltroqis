@@ -30,12 +30,10 @@ export const QUERY_KEYS = {
   // Notifications
   notifications: (userId: string) => ['notifications', userId] as const,
 
-  // Dashboard
-  dashboardStats: ['dashboard', 'stats'] as const,
+  // Dashboard — all stat/chart hooks share this single base key so React Query
+  // only fires one set of network requests and derives each result via `select`.
+  dashboardBase: ['dashboard', 'base'] as const,
   activityLogs: ['dashboard', 'activity'] as const,
-  roleDistribution: ['dashboard', 'roles'] as const,
-  taskChartData: ['dashboard', 'taskChart'] as const,
-  bugTrendData: ['dashboard', 'bugTrend'] as const,
 
   // Comments / Activity
   comments: (entityType: string, entityId: string) =>

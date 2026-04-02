@@ -8,7 +8,7 @@ import { Avatar } from '../ui/Avatar';
 import { useAuthStore } from '../../store/authStore';
 import { useAppStore } from '../../store/appStore';
 import { useNotifications } from '../../hooks/useDashboard';
-import { supabase, isSupabaseConfigured } from '../../lib/supabase';
+import { supabase } from '../../lib/supabase';
 import { useQueryClient } from '@tanstack/react-query';
 import { QUERY_KEYS } from '../../lib/queryKeys';
 
@@ -30,7 +30,7 @@ export const Navbar: React.FC = () => {
 
   // Realtime subscription for new notifications
   useEffect(() => {
-    if (!isSupabaseConfigured() || !user?.id) return;
+    if (!user?.id) return;
 
     const channel = supabase
       .channel(`notifications:${user.id}`)
@@ -74,7 +74,6 @@ export const Navbar: React.FC = () => {
   }, []);
 
   const markAsRead = async (notifId: string) => {
-    if (!isSupabaseConfigured()) return;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await (supabase as any).from('notifications').update({ read: true }).eq('id', notifId);
     qc.invalidateQueries({ queryKey: QUERY_KEYS.notifications(user?.id ?? '') });
@@ -103,7 +102,7 @@ export const Navbar: React.FC = () => {
   };
 
   const markAllRead = async () => {
-    if (!isSupabaseConfigured() || !user?.id) return;
+    if (!user?.id) return;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await (supabase as any)
       .from('notifications')

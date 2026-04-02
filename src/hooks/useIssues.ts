@@ -1,6 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase, isSupabaseConfigured, isSchemaError } from '../lib/supabase';
-import { MOCK_ISSUES, MOCK_USERS } from '../lib/mockData';
+import { supabase, isSchemaError } from '../lib/supabase';
 import { QUERY_KEYS } from '../lib/queryKeys';
 import { toast } from '../components/ui/Toast';
 import { notifyProjectStakeholdersAdminAction } from '../lib/notifyStakeholders';
@@ -12,12 +11,6 @@ export function useIssues(projectId?: string) {
   return useQuery({
     queryKey: QUERY_KEYS.issues(projectId),
     queryFn: async (): Promise<Issue[]> => {
-      if (!isSupabaseConfigured()) {
-        return projectId
-          ? MOCK_ISSUES.filter((i) => i.project_id === projectId)
-          : MOCK_ISSUES;
-      }
-
       let query = supabase
         .from('issues')
         .select('*')
@@ -65,18 +58,6 @@ export function useCreateIssue() {
         | 'steps_to_reproduce'
       >
     ) => {
-      if (!isSupabaseConfigured()) {
-        return {
-          id: `i${Date.now()}`,
-          ...input,
-          status: 'open' as IssueStatus,
-          reporter: MOCK_USERS.find((u) => u.id === input.reporter_id),
-          assignee: MOCK_USERS.find((u) => u.id === input.assignee_id),
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          comment_count: 0,
-        } as Issue;
-      }
       const { data, error } = await supabase
         .from('issues')
         .insert({ ...input, status: 'open' as const })
@@ -89,7 +70,7 @@ export function useCreateIssue() {
     onSuccess: (data) => {
       qc.invalidateQueries({ queryKey: QUERY_KEYS.issues(data.project_id) });
       qc.invalidateQueries({ queryKey: QUERY_KEYS.issues() });
-      qc.invalidateQueries({ queryKey: QUERY_KEYS.dashboardStats });
+      qc.invalidateQueries({ queryKey: QUERY_KEYS.dashboardBase });
       qc.invalidateQueries({ queryKey: QUERY_KEYS.activityLogs });
       qc.invalidateQueries({ queryKey: ['activity'] });
       toast.success('Issue created');
@@ -118,7 +99,6 @@ export function useUpdateIssue() {
       id: string;
       updates: Partial<Issue>;
     }) => {
-      if (!isSupabaseConfigured()) return { id, ...updates } as Issue;
       const { data, error } = await supabase
         .from('issues')
         .update({ ...updates, updated_at: new Date().toISOString() })
@@ -131,7 +111,7 @@ export function useUpdateIssue() {
     },
     onSuccess: (data) => {
       qc.invalidateQueries({ queryKey: QUERY_KEYS.issues() });
-      qc.invalidateQueries({ queryKey: QUERY_KEYS.dashboardStats });
+      qc.invalidateQueries({ queryKey: QUERY_KEYS.dashboardBase });
       qc.invalidateQueries({ queryKey: QUERY_KEYS.activityLogs });
       qc.invalidateQueries({ queryKey: ['activity'] });
       toast.success('Issue updated');
@@ -162,7 +142,6 @@ export function useDeleteIssue() {
       projectId: string;
       title: string;
     }) => {
-      if (!isSupabaseConfigured()) return;
       await notifyProjectStakeholdersAdminAction({
         projectId,
         type: 'issue.deleted',
@@ -176,7 +155,7 @@ export function useDeleteIssue() {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: QUERY_KEYS.issues() });
-      qc.invalidateQueries({ queryKey: QUERY_KEYS.dashboardStats });
+      qc.invalidateQueries({ queryKey: QUERY_KEYS.dashboardBase });
       qc.invalidateQueries({ queryKey: QUERY_KEYS.activityLogs });
       qc.invalidateQueries({ queryKey: ['activity'] });
       toast.success('Issue deleted');

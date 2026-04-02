@@ -785,6 +785,11 @@ export const MOCK_DASHBOARD_STATS: DashboardStats = {
   total_tasks: 24,
   completed_tasks: 16,
   open_issues: 3,
+  // Previous-month snapshots (used to compute MoM % change in stat cards)
+  prev_total_users: 2531,
+  prev_active_users: 136,
+  prev_pending_invites: 29,
+  prev_admin_users: 8,
 };
 
 export const MOCK_ROLE_DISTRIBUTION: RoleDistribution[] = [

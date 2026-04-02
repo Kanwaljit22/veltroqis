@@ -1,8 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { User } from '../types';
-import { supabase, isSupabaseConfigured } from '../lib/supabase';
-import { MOCK_USERS } from '../lib/mockData';
+import { supabase } from '../lib/supabase';
 import type { Session } from '@supabase/supabase-js';
 
 interface AuthState {
@@ -10,7 +9,6 @@ interface AuthState {
   loading: boolean;
   error: string | null;
   isAuthenticated: boolean;
-  useMockData: boolean;
   setUser: (user: User | null) => void;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
@@ -43,8 +41,6 @@ function userFromSession(session: Session): User {
 /** Try to load the DB profile; fall back to session-based user silently */
 async function fetchProfile(session: Session): Promise<User> {
   try {
-    // .maybeSingle() returns null (not a 406) when no row exists yet,
-    // which happens for brand-new accounts before the DB trigger fires.
     const { data, error } = await supabase
       .from('users')
       .select('*')
@@ -64,18 +60,12 @@ export const useAuthStore = create<AuthState>()(
       loading: true,
       error: null,
       isAuthenticated: false,
-      useMockData: !isSupabaseConfigured(),
 
       setUser: (user) => set({ user, isAuthenticated: !!user }),
       setLoading: (loading) => set({ loading }),
       setError: (error) => set({ error }),
 
       initialize: async () => {
-        if (!isSupabaseConfigured()) {
-          set({ loading: false, useMockData: true });
-          return;
-        }
-
         try {
           const { data: { session } } = await supabase.auth.getSession();
 
@@ -90,9 +80,6 @@ export const useAuthStore = create<AuthState>()(
           set({ loading: false });
         }
 
-        // Keep session in sync across tabs and after token refresh.
-        // The callback is intentionally NOT async — we use .then/.catch to
-        // prevent an unhandled-rejection when fetchProfile can't reach the DB.
         supabase.auth.onAuthStateChange((event, session) => {
           if (
             (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') &&
@@ -112,21 +99,9 @@ export const useAuthStore = create<AuthState>()(
       signIn: async (email, password) => {
         set({ loading: true, error: null });
         try {
-          if (!isSupabaseConfigured()) {
-            // Mock mode — any credentials work
-            const mockUser =
-              MOCK_USERS.find((u) => u.email === email) ?? MOCK_USERS[0];
-            set({ user: mockUser, isAuthenticated: true, loading: false });
-            return;
-          }
-
-          const { data, error } = await supabase.auth.signInWithPassword({
-            email,
-            password,
-          });
+          const { data, error } = await supabase.auth.signInWithPassword({ email, password });
           if (error) throw error;
 
-          // Set authenticated immediately — don't wait for onAuthStateChange
           if (data.session) {
             const user = await fetchProfile(data.session);
             set({ user, isAuthenticated: true, loading: false });
@@ -140,10 +115,6 @@ export const useAuthStore = create<AuthState>()(
       },
 
       signInWithGoogle: async () => {
-        if (!isSupabaseConfigured()) {
-          set({ user: MOCK_USERS[0], isAuthenticated: true });
-          return;
-        }
         const { error } = await supabase.auth.signInWithOAuth({
           provider: 'google',
           options: {
@@ -157,24 +128,6 @@ export const useAuthStore = create<AuthState>()(
       signUp: async (email, password, fullName, role) => {
         set({ loading: true, error: null });
         try {
-          if (!isSupabaseConfigured()) {
-            const newUser: User = {
-              id: Date.now().toString(),
-              email,
-              full_name: fullName,
-              role: 'developer',
-              status: 'active',
-              joined_at: new Date().toISOString(),
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString(),
-            };
-            set({ user: newUser, isAuthenticated: true, loading: false });
-            return;
-          }
-
-          // The `role` value is embedded in user_metadata and read by the
-          // handle_new_user DB trigger.  The trigger caps it to non-admin roles,
-          // so passing 'admin' here is intentionally ignored by the DB.
           const { data, error } = await supabase.auth.signUp({
             email,
             password,
@@ -185,12 +138,10 @@ export const useAuthStore = create<AuthState>()(
           });
           if (error) throw error;
 
-          // If email confirmation is disabled, session is returned immediately
           if (data.session) {
             const user = await fetchProfile(data.session);
             set({ user, isAuthenticated: true, loading: false });
           } else {
-            // Email confirmation required — user needs to check inbox
             set({ loading: false });
           }
         } catch (err: unknown) {
@@ -201,16 +152,11 @@ export const useAuthStore = create<AuthState>()(
       },
 
       signOut: async () => {
-        if (!isSupabaseConfigured()) {
-          set({ user: null, isAuthenticated: false });
-          return;
-        }
         await supabase.auth.signOut();
         set({ user: null, isAuthenticated: false });
       },
 
       forgotPassword: async (email) => {
-        if (!isSupabaseConfigured()) return;
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
           redirectTo: `${window.location.origin}/reset-password`,
         });
@@ -218,7 +164,6 @@ export const useAuthStore = create<AuthState>()(
       },
 
       resetPassword: async (password) => {
-        if (!isSupabaseConfigured()) return;
         const { error } = await supabase.auth.updateUser({ password });
         if (error) throw error;
       },
@@ -227,14 +172,6 @@ export const useAuthStore = create<AuthState>()(
         const { user } = get();
         if (!user) return;
 
-        if (!isSupabaseConfigured()) {
-          set({ user: { ...user, ...updates } });
-          return;
-        }
-
-        // Only send columns that exist in the DB and belong to the user's own
-        // profile.  Role/status changes go through useChangeUserRole / useUpdateUser
-        // (which require admin privileges) so we never send those here.
         const {
           role: _role,
           status: _status,
@@ -260,7 +197,6 @@ export const useAuthStore = create<AuthState>()(
       partialize: (state) => ({
         user: state.user,
         isAuthenticated: state.isAuthenticated,
-        useMockData: state.useMockData,
       }),
     }
   )

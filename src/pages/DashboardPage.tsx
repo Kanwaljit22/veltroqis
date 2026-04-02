@@ -12,7 +12,8 @@ import { Badge } from '../components/ui/Badge';
 import { ProgressBar } from '../components/ui/Progress';
 import { SkeletonStatCard, Skeleton } from '../components/ui/Skeleton';
 import {
-  cn, formatTimeAgo, ROLE_LABELS, ROLE_COLORS, ROLE_BAR_COLORS, formatActivityLogSummary,
+  cn, formatTimeAgo, formatStatChange,
+  ROLE_LABELS, ROLE_COLORS, ROLE_BAR_COLORS, formatActivityLogSummary,
 } from '../lib/utils';
 import { useAuthStore } from '../store/authStore';
 import {
@@ -50,18 +51,28 @@ export const DashboardPage: React.FC = () => {
           Array.from({ length: 4 }).map((_, i) => <SkeletonStatCard key={i} />)
         ) : (
           <>
-            <StatCard title="Total Users" value={s?.total_users ?? 0}
-              change="+12.5% from last month" changeType="positive"
-              icon={<Users className="h-5 w-5 text-blue-500" />} iconBg="bg-blue-50" />
-            <StatCard title="Active Now" value={s?.active_users ?? 0}
-              change="+4.3% from last month" changeType="positive"
-              icon={<Activity className="h-5 w-5 text-green-500" />} iconBg="bg-green-50" />
-            <StatCard title="Pending Invites" value={s?.pending_invites ?? 0}
-              change="-2.1% from last month" changeType="negative"
-              icon={<UserPlus className="h-5 w-5 text-yellow-500" />} iconBg="bg-yellow-50" />
-            <StatCard title="Admin Users" value={s?.admin_users ?? 0}
-              change="No change from last month" changeType="neutral"
-              icon={<Shield className="h-5 w-5 text-purple-500" />} iconBg="bg-purple-50" />
+            {(() => {
+              const totalUsersChange    = formatStatChange(s?.total_users     ?? 0, s?.prev_total_users     ?? 0);
+              const activeUsersChange   = formatStatChange(s?.active_users    ?? 0, s?.prev_active_users    ?? 0);
+              const pendingInvChange    = formatStatChange(s?.pending_invites ?? 0, s?.prev_pending_invites ?? 0);
+              const adminUsersChange    = formatStatChange(s?.admin_users     ?? 0, s?.prev_admin_users     ?? 0);
+              return (
+                <>
+                  <StatCard title="Total Users" value={s?.total_users ?? 0}
+                    change={totalUsersChange.text} changeType={totalUsersChange.type}
+                    icon={<Users className="h-5 w-5 text-blue-500" />} iconBg="bg-blue-50" />
+                  <StatCard title="Active Now" value={s?.active_users ?? 0}
+                    change={activeUsersChange.text} changeType={activeUsersChange.type}
+                    icon={<Activity className="h-5 w-5 text-green-500" />} iconBg="bg-green-50" />
+                  <StatCard title="Pending Invites" value={s?.pending_invites ?? 0}
+                    change={pendingInvChange.text} changeType={pendingInvChange.type}
+                    icon={<UserPlus className="h-5 w-5 text-yellow-500" />} iconBg="bg-yellow-50" />
+                  <StatCard title="Admin Users" value={s?.admin_users ?? 0}
+                    change={adminUsersChange.text} changeType={adminUsersChange.type}
+                    icon={<Shield className="h-5 w-5 text-purple-500" />} iconBg="bg-purple-50" />
+                </>
+              );
+            })()}
           </>
         )}
       </div>

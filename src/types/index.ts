@@ -203,6 +203,11 @@ export interface DashboardStats {
   total_tasks: number;
   completed_tasks: number;
   open_issues: number;
+  /** Previous-month snapshots used to compute MoM change percentages */
+  prev_total_users: number;
+  prev_active_users: number;
+  prev_pending_invites: number;
+  prev_admin_users: number;
 }
 
 export interface RoleDistribution {

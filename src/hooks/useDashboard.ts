@@ -1,13 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-import { supabase, isSupabaseConfigured, isSchemaError } from '../lib/supabase';
+import { supabase, isSchemaError } from '../lib/supabase';
 import { useAuthStore } from '../store/authStore';
-import {
-  MOCK_DASHBOARD_STATS,
-  MOCK_ACTIVITY_LOGS,
-  MOCK_ROLE_DISTRIBUTION,
-  MOCK_TASK_CHART_DATA,
-  MOCK_BUG_TREND_DATA,
-} from '../lib/mockData';
 import { QUERY_KEYS } from '../lib/queryKeys';
 import type {
   DashboardStats,
@@ -15,50 +8,96 @@ import type {
   ActivityLog,
   UserRole,
 } from '../types';
-import { format, subMonths, startOfMonth, endOfMonth, subWeeks, startOfWeek, endOfWeek } from 'date-fns';
+import {
+  format,
+  subMonths, startOfMonth, endOfMonth,
+  subWeeks, startOfWeek, endOfWeek,
+} from 'date-fns';
+
+// ─── Shared Base Types ────────────────────────────────────────────────────────
+
+interface RawUser    { role: string; status: string; created_at: string }
+interface RawInvite  { status: string; sent_at: string }
+interface RawProject { status: string }
+interface RawTask    { status: string; created_at: string; updated_at: string }
+interface RawIssue   { status: string; created_at: string; updated_at: string }
+
+interface DashboardRawData {
+  readonly users:    RawUser[];
+  readonly invites:  RawInvite[];
+  readonly projects: RawProject[];
+  readonly tasks:    RawTask[];
+  readonly issues:   RawIssue[];
+}
+
+// ─── Shared query function ────────────────────────────────────────────────────
+// Executes 5 parallel SELECT queries — one per table — and returns the raw rows.
+// All dashboard stat/chart hooks subscribe to the same query key and receive
+// their derived data via React Query's `select` option, so this function runs
+// exactly once per cache window regardless of how many hooks are mounted.
+
+async function fetchDashboardBase(): Promise<DashboardRawData> {
+  const [usersRes, invitesRes, projectsRes, tasksRes, issuesRes] = await Promise.all([
+    supabase.from('users').select('role, status, created_at'),
+    supabase.from('invitations').select('status, sent_at'),
+    supabase.from('projects').select('status'),
+    supabase.from('tasks').select('status, created_at, updated_at'),
+    supabase.from('issues').select('status, created_at, updated_at'),
+  ]);
+
+  // Surface the first real error; schema errors return empty arrays gracefully.
+  for (const res of [usersRes, invitesRes, projectsRes, tasksRes, issuesRes]) {
+    if (res.error && !isSchemaError(res.error)) throw new Error(res.error.message);
+  }
+
+  return {
+    users:    usersRes.data    ?? [],
+    invites:  invitesRes.data  ?? [],
+    projects: projectsRes.data ?? [],
+    tasks:    tasksRes.data    ?? [],
+    issues:   issuesRes.data   ?? [],
+  };
+}
+
+// Shared query options — every stat/chart hook spreads these so they all target
+// the same cache entry and benefit from React Query's built-in deduplication.
+const DASHBOARD_BASE_OPTS = {
+  queryKey: QUERY_KEYS.dashboardBase,
+  queryFn:  fetchDashboardBase,
+  staleTime: 60_000,
+  gcTime:    5 * 60_000,
+} as const;
 
 // ─── Dashboard Stats ──────────────────────────────────────────────────────────
 
 export function useDashboardStats() {
   return useQuery({
-    queryKey: QUERY_KEYS.dashboardStats,
-    queryFn: async (): Promise<DashboardStats> => {
-      if (!isSupabaseConfigured()) return MOCK_DASHBOARD_STATS;
-
-      const results = await Promise.all([
-        supabase.from('users').select('*', { count: 'exact', head: true }),
-        supabase.from('users').select('*', { count: 'exact', head: true }).eq('status', 'active'),
-        supabase.from('users').select('*', { count: 'exact', head: true }).eq('role', 'admin'),
-        supabase.from('invitations').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
-        supabase.from('projects').select('*', { count: 'exact', head: true }),
-        supabase.from('projects').select('*', { count: 'exact', head: true }).eq('status', 'active'),
-        supabase.from('tasks').select('*', { count: 'exact', head: true }),
-        supabase.from('tasks').select('*', { count: 'exact', head: true }).eq('status', 'done'),
-        supabase.from('issues').select('*', { count: 'exact', head: true }).eq('status', 'open'),
-      ]);
-
-      // If any table is missing (schema not applied yet) return zeros
-      if (results.some((r) => isSchemaError(r.error))) return MOCK_DASHBOARD_STATS;
-
-      const [
-        { count: totalUsers }, { count: activeUsers }, { count: adminUsers },
-        { count: pendingInvites }, { count: totalProjects }, { count: activeProjects },
-        { count: totalTasks }, { count: completedTasks }, { count: openIssues },
-      ] = results;
+    ...DASHBOARD_BASE_OPTS,
+    select: (raw): DashboardStats => {
+      const prevMonthStart = startOfMonth(subMonths(new Date(), 1)).toISOString();
+      const prevMonthEnd   = endOfMonth(subMonths(new Date(), 1)).toISOString();
+      const { users, invites, projects, tasks, issues } = raw;
 
       return {
-        total_users: totalUsers ?? 0,
-        active_users: activeUsers ?? 0,
-        admin_users: adminUsers ?? 0,
-        pending_invites: pendingInvites ?? 0,
-        total_projects: totalProjects ?? 0,
-        active_projects: activeProjects ?? 0,
-        total_tasks: totalTasks ?? 0,
-        completed_tasks: completedTasks ?? 0,
-        open_issues: openIssues ?? 0,
+        total_users:     users.length,
+        active_users:    users.filter((u) => u.status === 'active').length,
+        admin_users:     users.filter((u) => u.role === 'admin').length,
+        pending_invites: invites.filter((i) => i.status === 'pending').length,
+        total_projects:  projects.length,
+        active_projects: projects.filter((p) => p.status === 'active').length,
+        total_tasks:     tasks.length,
+        completed_tasks: tasks.filter((t) => t.status === 'done').length,
+        open_issues:     issues.filter((i) => i.status === 'open').length,
+        prev_total_users:     users.filter((u) => u.created_at <= prevMonthEnd).length,
+        prev_active_users:    users.filter((u) => u.status === 'active' && u.created_at <= prevMonthEnd).length,
+        prev_admin_users:     users.filter((u) => u.role === 'admin' && u.created_at <= prevMonthEnd).length,
+        prev_pending_invites: invites.filter((i) =>
+          i.status === 'pending' &&
+          i.sent_at >= prevMonthStart &&
+          i.sent_at <= prevMonthEnd
+        ).length,
       };
     },
-    staleTime: 60_000,
   });
 }
 
@@ -66,43 +105,113 @@ export function useDashboardStats() {
 
 export function useRoleDistribution() {
   return useQuery({
-    queryKey: QUERY_KEYS.roleDistribution,
-    queryFn: async (): Promise<RoleDistribution[]> => {
-      if (!isSupabaseConfigured()) return MOCK_ROLE_DISTRIBUTION;
-
-      const { data, error } = await supabase
-        .from('users')
-        .select('role');
-      if (error) {
-        if (isSchemaError(error)) return MOCK_ROLE_DISTRIBUTION;
-        throw new Error(error.message);
-      }
-
+    ...DASHBOARD_BASE_OPTS,
+    select: (raw): RoleDistribution[] => {
       const counts: Record<string, number> = {};
-      (data ?? []).forEach(({ role }) => {
+      raw.users.forEach(({ role }) => {
         counts[role] = (counts[role] ?? 0) + 1;
       });
 
       const roles: UserRole[] = ['admin', 'project_lead', 'designer', 'developer', 'qa'];
       return roles.map((role) => ({ role, count: counts[role] ?? 0 }));
     },
-    staleTime: 60_000,
+  });
+}
+
+// ─── Task Chart Data (last 6 months) ─────────────────────────────────────────
+
+export function useTaskChartData() {
+  return useQuery({
+    ...DASHBOARD_BASE_OPTS,
+    select: (raw) => {
+      const now         = new Date();
+      const windowStart = startOfMonth(subMonths(now, 5));
+      const windowEnd   = endOfMonth(now);
+
+      const months = Array.from({ length: 6 }, (_, i) => subMonths(now, 5 - i));
+      const createdMap:   Record<string, number> = {};
+      const completedMap: Record<string, number> = {};
+      months.forEach((m) => {
+        const key = format(m, 'MMM');
+        createdMap[key]   = 0;
+        completedMap[key] = 0;
+      });
+
+      raw.tasks.forEach((t) => {
+        const created = new Date(t.created_at);
+        if (created >= windowStart && created <= windowEnd) {
+          const key = format(created, 'MMM');
+          if (key in createdMap) createdMap[key]++;
+        }
+        if (t.status === 'done') {
+          const updated = new Date(t.updated_at);
+          if (updated >= windowStart && updated <= windowEnd) {
+            const key = format(updated, 'MMM');
+            if (key in completedMap) completedMap[key]++;
+          }
+        }
+      });
+
+      return months.map((m) => {
+        const key = format(m, 'MMM');
+        return { month: key, created: createdMap[key], completed: completedMap[key] };
+      });
+    },
+  });
+}
+
+// ─── Bug Trend Data (last 6 weeks) ───────────────────────────────────────────
+
+export function useBugTrendData() {
+  return useQuery({
+    ...DASHBOARD_BASE_OPTS,
+    select: (raw) => {
+      const now         = new Date();
+      const windowStart = startOfWeek(subWeeks(now, 5));
+      const windowEnd   = endOfWeek(now);
+
+      const weeks = Array.from({ length: 6 }, (_, i) => subWeeks(now, 5 - i));
+      const openMap:   Record<number, number> = {};
+      const closedMap: Record<number, number> = {};
+      weeks.forEach((_, idx) => { openMap[idx] = 0; closedMap[idx] = 0; });
+
+      raw.issues.forEach((issue) => {
+        const isOpen   = ['open', 'in_progress'].includes(issue.status);
+        const isClosed = ['resolved', 'closed'].includes(issue.status);
+
+        if (isOpen) {
+          const d = new Date(issue.created_at);
+          if (d >= windowStart && d <= windowEnd) {
+            const idx = weeks.findIndex((w) => d >= startOfWeek(w) && d <= endOfWeek(w));
+            if (idx !== -1) openMap[idx]++;
+          }
+        }
+        if (isClosed) {
+          const d = new Date(issue.updated_at);
+          if (d >= windowStart && d <= windowEnd) {
+            const idx = weeks.findIndex((w) => d >= startOfWeek(w) && d <= endOfWeek(w));
+            if (idx !== -1) closedMap[idx]++;
+          }
+        }
+      });
+
+      return weeks.map((_, i) => ({
+        week:   `W${i + 1}`,
+        open:   openMap[i],
+        closed: closedMap[i],
+      }));
+    },
   });
 }
 
 // ─── Activity Logs ────────────────────────────────────────────────────────────
 
-/** Admin-only global audit feed (RLS + enabled gate). */
 export function useActivityLogs(limit = 10) {
   const isAdmin = useAuthStore((s) => s.user?.role === 'admin');
 
   return useQuery({
     queryKey: [...QUERY_KEYS.activityLogs, limit],
     queryFn: async (): Promise<ActivityLog[]> => {
-      if (!isSupabaseConfigured()) {
-        return MOCK_ACTIVITY_LOGS.slice(0, limit);
-      }
-
       const { data, error } = await supabase
         .from('activity_logs')
         .select('*, user:users(id, full_name, avatar_url, email, role, status, joined_at, created_at, updated_at)')
@@ -115,95 +224,8 @@ export function useActivityLogs(limit = 10) {
       return (data ?? []) as unknown as ActivityLog[];
     },
     enabled: isAdmin,
-    staleTime: 15_000,
-    refetchInterval: isAdmin ? 45_000 : false,
-  });
-}
-
-// ─── Task Chart Data (last 6 months) ─────────────────────────────────────────
-
-export function useTaskChartData() {
-  return useQuery({
-    queryKey: QUERY_KEYS.taskChartData,
-    queryFn: async () => {
-      if (!isSupabaseConfigured()) return MOCK_TASK_CHART_DATA;
-
-      const months = Array.from({ length: 6 }, (_, i) => subMonths(new Date(), 5 - i));
-
-      const results = await Promise.all(
-        months.map(async (month) => {
-          const start = startOfMonth(month).toISOString();
-          const end = endOfMonth(month).toISOString();
-
-          const [{ count: created }, { count: completed }] = await Promise.all([
-            supabase
-              .from('tasks')
-              .select('*', { count: 'exact', head: true })
-              .gte('created_at', start)
-              .lte('created_at', end),
-            supabase
-              .from('tasks')
-              .select('*', { count: 'exact', head: true })
-              .eq('status', 'done')
-              .gte('updated_at', start)
-              .lte('updated_at', end),
-          ]);
-
-          return {
-            month: format(month, 'MMM'),
-            created: created ?? 0,
-            completed: completed ?? 0,
-          };
-        })
-      );
-
-      return results;
-    },
-    staleTime: 5 * 60_000,
-  });
-}
-
-// ─── Bug Trend Data (last 6 weeks) ───────────────────────────────────────────
-
-export function useBugTrendData() {
-  return useQuery({
-    queryKey: QUERY_KEYS.bugTrendData,
-    queryFn: async () => {
-      if (!isSupabaseConfigured()) return MOCK_BUG_TREND_DATA;
-
-      const weeks = Array.from({ length: 6 }, (_, i) => subWeeks(new Date(), 5 - i));
-
-      const results = await Promise.all(
-        weeks.map(async (week, idx) => {
-          const start = startOfWeek(week).toISOString();
-          const end = endOfWeek(week).toISOString();
-
-          const [{ count: open }, { count: closed }] = await Promise.all([
-            supabase
-              .from('issues')
-              .select('*', { count: 'exact', head: true })
-              .in('status', ['open', 'in_progress'])
-              .gte('created_at', start)
-              .lte('created_at', end),
-            supabase
-              .from('issues')
-              .select('*', { count: 'exact', head: true })
-              .in('status', ['resolved', 'closed'])
-              .gte('updated_at', start)
-              .lte('updated_at', end),
-          ]);
-
-          return {
-            week: `W${idx + 1}`,
-            open: open ?? 0,
-            closed: closed ?? 0,
-          };
-        })
-      );
-
-      return results;
-    },
-    staleTime: 5 * 60_000,
+    staleTime: 2 * 60_000,
+    refetchInterval: isAdmin ? 2 * 60_000 : false,
   });
 }
 
@@ -213,29 +235,22 @@ export function useNotifications(userId: string) {
   return useQuery({
     queryKey: QUERY_KEYS.notifications(userId),
     queryFn: async () => {
-      if (!isSupabaseConfigured() || !userId) return [];
-      const res = await supabase
+      if (!userId) return [];
+      const { data, error } = await supabase
         .from('notifications')
-        .select(`
-          *,
-          actor:users!notifications_actor_id_fkey(full_name, avatar_url)
-        `)
+        .select('*, actor:users!notifications_actor_id_fkey(full_name, avatar_url)')
         .eq('user_id', userId)
         .order('created_at', { ascending: false })
         .limit(20);
-      if (res.error) {
-        const plain = await supabase
-          .from('notifications')
-          .select('*')
-          .eq('user_id', userId)
-          .order('created_at', { ascending: false })
-          .limit(20);
-        if (plain.error) throw new Error(plain.error.message);
-        return plain.data ?? [];
+
+      if (error) {
+        if (isSchemaError(error)) return [];
+        throw new Error(error.message);
       }
-      return res.data ?? [];
+      return data ?? [];
     },
     enabled: !!userId,
-    staleTime: 15_000,
+    staleTime: 60_000,
+    gcTime: 5 * 60_000,
   });
 }

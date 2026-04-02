@@ -1,4 +1,4 @@
-import { supabase, isSupabaseConfigured } from './supabase';
+import { supabase } from './supabase';
 import { useAuthStore } from '../store/authStore';
 
 export type NotifyStakeholderEntity = 'project' | 'task' | 'issue' | 'sprint';
@@ -17,8 +17,6 @@ export async function notifyProjectStakeholdersAdminAction(input: {
   entityId?: string | null;
   extraUserIds?: string[] | null;
 }): Promise<void> {
-  if (!isSupabaseConfigured()) return;
-
   const actor = useAuthStore.getState().user;
   if (!actor || actor.role !== 'admin') return;
 

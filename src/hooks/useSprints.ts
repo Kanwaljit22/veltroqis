@@ -1,6 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase, isSupabaseConfigured, isSchemaError } from '../lib/supabase';
-import { MOCK_SPRINTS, MOCK_BURNDOWN_DATA } from '../lib/mockData';
+import { supabase, isSchemaError } from '../lib/supabase';
 import { QUERY_KEYS } from '../lib/queryKeys';
 import { toast } from '../components/ui/Toast';
 import { notifyProjectStakeholdersAdminAction } from '../lib/notifyStakeholders';
@@ -14,15 +13,12 @@ export function useSprints(projectId?: string) {
     queryFn: async (): Promise<Sprint[]> => {
       if (!projectId) return [];
 
-      if (!isSupabaseConfigured()) {
-        return MOCK_SPRINTS.filter((s) => s.project_id === projectId);
-      }
-      let query = supabase
+      const { data, error } = await supabase
         .from('sprints')
         .select('*')
+        .eq('project_id', projectId)
         .order('start_date', { ascending: false });
-      query = query.eq('project_id', projectId);
-      const { data, error } = await query;
+
       if (error) {
         if (isSchemaError(error)) return [];
         throw new Error(error.message);
@@ -39,14 +35,13 @@ export function useActiveSprint(projectId?: string) {
     queryFn: async (): Promise<Sprint | null> => {
       if (!projectId) return null;
 
-      if (!isSupabaseConfigured()) {
-        return MOCK_SPRINTS.find(
-          (s) => s.status === 'active' && s.project_id === projectId
-        ) ?? null;
-      }
-      let query = supabase.from('sprints').select('*').eq('status', 'active').limit(1);
-      query = query.eq('project_id', projectId);
-      const { data, error } = await query;
+      const { data, error } = await supabase
+        .from('sprints')
+        .select('*')
+        .eq('project_id', projectId)
+        .eq('status', 'active')
+        .limit(1);
+
       if (error) {
         if (isSchemaError(error)) return null;
         throw new Error(error.message);
@@ -57,15 +52,13 @@ export function useActiveSprint(projectId?: string) {
   });
 }
 
-export function useBurndownData(sprintId?: string) {
+// Burndown chart data is computed server-side in a future iteration.
+// Returns empty until the burndown_points table/RPC is implemented.
+export function useBurndownData(_sprintId?: string) {
   return useQuery({
-    queryKey: ['burndown', sprintId],
-    queryFn: async (): Promise<BurndownPoint[]> => {
-      if (!isSupabaseConfigured() || !sprintId) return MOCK_BURNDOWN_DATA;
-      // In a real app, compute from task completion timestamps
-      return MOCK_BURNDOWN_DATA;
-    },
-    enabled: !!sprintId,
+    queryKey: ['burndown', _sprintId],
+    queryFn: (): BurndownPoint[] => [],
+    enabled: !!_sprintId,
     staleTime: 60_000,
   });
 }
@@ -78,16 +71,6 @@ export function useCreateSprint() {
     mutationFn: async (
       input: Pick<Sprint, 'project_id' | 'name' | 'goal' | 'start_date' | 'end_date'>
     ): Promise<Sprint> => {
-      if (!isSupabaseConfigured()) {
-        return {
-          id: `s${Date.now()}`,
-          ...input,
-          status: 'planning',
-          created_at: new Date().toISOString(),
-          total_story_points: 0,
-          completed_story_points: 0,
-        } as Sprint;
-      }
       const { data, error } = await supabase
         .from('sprints')
         .insert({ ...input, status: 'planning' as const })
@@ -125,7 +108,6 @@ export function useUpdateSprint() {
       projectId: string;
       updates: Partial<Sprint>;
     }): Promise<Sprint> => {
-      if (!isSupabaseConfigured()) return { id, project_id: projectId, ...updates } as Sprint;
       const { data, error } = await supabase
         .from('sprints')
         .update(updates)
@@ -165,7 +147,6 @@ export function useStartSprint() {
       projectId: string;
       name: string;
     }) => {
-      if (!isSupabaseConfigured()) return { id, projectId, name };
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { error } = await (supabase as any)
         .from('sprints')
@@ -203,7 +184,6 @@ export function useCompleteSprint() {
       projectId: string;
       name: string;
     }) => {
-      if (!isSupabaseConfigured()) return { id, projectId, name };
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { error } = await (supabase as any)
         .from('sprints')

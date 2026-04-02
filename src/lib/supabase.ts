@@ -5,39 +5,25 @@ const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  console.warn(
-    '[Veltroqis] Supabase credentials not found in .env.local — running in mock data mode.'
+  throw new Error(
+    '[Veltroqis] Missing Supabase credentials. ' +
+    'Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your .env.local file.'
   );
 }
 
-export const supabase = createClient<Database>(
-  supabaseUrl || 'https://placeholder.supabase.co',
-  supabaseAnonKey || 'placeholder',
-  {
-    auth: {
-      autoRefreshToken: true,
-      persistSession: true,
-      detectSessionInUrl: true,
-      storageKey: 'veltroqis-auth-token',
-    },
-  }
-);
-
-/**
- * Set to `true` to force mock/demo data regardless of Supabase credentials.
- * Defaults to `false` (live backend) when credentials are present.
- */
-export const DEMO_MODE = (import.meta.env.VITE_DEMO_MODE as string | undefined) === 'true';
-
-/** Returns true when real Supabase credentials are configured AND demo mode is off */
-export const isSupabaseConfigured = () =>
-  !DEMO_MODE &&
-  !!(import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY);
+export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: true,
+    storageKey: 'veltroqis-auth-token',
+  },
+});
 
 /**
  * Returns true when a Supabase/PostgREST error indicates the table or column
- * does not exist yet (schema has not been applied).  In this case callers
- * should return empty data rather than surfacing a hard error to the user.
+ * does not exist yet (schema has not been applied). Callers should return empty
+ * data rather than surfacing a hard error to the user.
  */
 export const isSchemaError = (error: { message?: string; code?: string } | null): boolean => {
   if (!error) return false;
@@ -53,8 +39,7 @@ export const isSchemaError = (error: { message?: string; code?: string } | null)
 /**
  * Returns true when PostgREST responds with HTTP 406 because `.single()` was
  * called but the query matched 0 rows (PGRST116).
- * Callers should use `.maybeSingle()` to avoid this error entirely; this
- * helper is provided as a belt-and-suspenders fallback.
+ * Callers should use `.maybeSingle()` to avoid this error entirely.
  */
 export const isNotFoundError = (error: { message?: string; code?: string } | null): boolean => {
   if (!error) return false;
@@ -105,22 +90,7 @@ export const getAttachmentSignedUrl = async (filePath: string, expiresIn = 31536
   return data.signedUrl;
 };
 
-const readFileAsDataURL = (file: File) =>
-  new Promise<string>((resolve, reject) => {
-    const r = new FileReader();
-    r.onload = () => resolve(r.result as string);
-    r.onerror = () => reject(new Error('Could not read file'));
-    r.readAsDataURL(file);
-  });
-
-/**
- * Uploads an image for rich-text sprint goals under `attachments/sprint-goals/{projectId}/`.
- * Mock mode embeds a data URL. Live mode returns a long-lived signed URL for <img src>.
- */
 export const uploadSprintGoalImage = async (projectId: string, file: File): Promise<string> => {
-  if (!isSupabaseConfigured()) {
-    return readFileAsDataURL(file);
-  }
   const { filePath } = await uploadAttachment('sprint-goals', projectId, file);
   return getAttachmentSignedUrl(filePath);
 };

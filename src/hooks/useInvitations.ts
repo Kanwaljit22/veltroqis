@@ -1,6 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase, isSupabaseConfigured, isSchemaError } from '../lib/supabase';
-import { MOCK_INVITATIONS } from '../lib/mockData';
+import { supabase, isSchemaError } from '../lib/supabase';
 import { QUERY_KEYS } from '../lib/queryKeys';
 import { toast } from '../components/ui/Toast';
 import type { Invitation, UserRole } from '../types';
@@ -17,7 +16,6 @@ export function useInvitations() {
   return useQuery({
     queryKey: QUERY_KEYS.invitations,
     queryFn: async (): Promise<Invitation[]> => {
-      if (!isSupabaseConfigured()) return MOCK_INVITATIONS;
       const { data, error } = await supabase
         .from('invitations')
         .select('*')
@@ -48,19 +46,6 @@ export function useSendInvitation() {
       message?: string;
       invitedBy: string;
     }) => {
-      if (!isSupabaseConfigured()) {
-        return {
-          id: Date.now().toString(),
-          email,
-          role,
-          status: 'pending',
-          invited_by: invitedBy,
-          message,
-          token: generateToken(),
-          sent_at: new Date().toISOString(),
-          expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-        } as Invitation;
-      }
       const { data, error } = await supabase
         .from('invitations')
         .insert({
@@ -92,7 +77,6 @@ export function useResendInvitation() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
-      if (!isSupabaseConfigured()) return;
       const { error } = await supabase
         .from('invitations')
         .update({
@@ -116,7 +100,6 @@ export function useRevokeInvitation() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
-      if (!isSupabaseConfigured()) return;
       const { error } = await supabase
         .from('invitations')
         .delete()

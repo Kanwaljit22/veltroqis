@@ -1,6 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase, isSupabaseConfigured, isSchemaError, isNotFoundError } from '../lib/supabase';
-import { MOCK_PROJECTS, MOCK_USERS } from '../lib/mockData';
+import { supabase, isSchemaError, isNotFoundError } from '../lib/supabase';
 import { QUERY_KEYS } from '../lib/queryKeys';
 import { toast } from '../components/ui/Toast';
 import { useAuthStore } from '../store/authStore';
@@ -10,14 +9,6 @@ import type { Project, ProjectStatus, User } from '../types';
 
 // ─── Queries ──────────────────────────────────────────────────────────────────
 
-/**
- * Returns the list of projects the current user is allowed to see:
- *  - `admin`       → all projects
- *  - everyone else → only projects where they are the lead or an explicit member
- *
- * The query key is scoped to the current user so that different users in the
- * same browser session never share a stale cached project list.
- */
 export function useProjects() {
   const { user } = useAuthStore();
   const userId = user?.id;
@@ -26,11 +17,6 @@ export function useProjects() {
   return useQuery({
     queryKey: QUERY_KEYS.projects(userId),
     queryFn: async (): Promise<Project[]> => {
-      if (!isSupabaseConfigured()) {
-        return filterAccessibleProjects(MOCK_PROJECTS, userId, role);
-      }
-
-      // RLS already enforces visibility; we just SELECT all and DB filters.
       const { data: projects, error } = await supabase
         .from('projects')
         .select('*')
@@ -40,7 +26,6 @@ export function useProjects() {
         throw new Error(error.message);
       }
 
-      // Enrich with lead, members, and task counts in parallel
       const [{ data: users }, { data: members }, { data: taskCounts }] = await Promise.all([
         supabase.from('users').select('*'),
         supabase.from('project_members').select('project_id, user_id'),
@@ -79,11 +64,6 @@ export function useProject(id: string) {
   return useQuery({
     queryKey: QUERY_KEYS.project(id),
     queryFn: async (): Promise<Project | null> => {
-      if (!isSupabaseConfigured()) {
-        return MOCK_PROJECTS.find((p) => p.id === id) ?? null;
-      }
-
-      // maybeSingle → null (not 406) when id doesn't exist or RLS blocks it
       const { data: project, error } = await supabase
         .from('projects')
         .select('*')
@@ -124,13 +104,6 @@ export function useProject(id: string) {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-/**
- * Strips client-side enrichment fields that do not exist as columns in the
- * `projects` table.  Spreading a full `Project` object into `.update()` would
- * send `lead`, `members`, `task_count`, etc. to PostgREST, which rejects
- * unknown columns with a 500 error.
- */
-/** Convert empty-string date values to null so PostgreSQL accepts them. */
 function normalizeDate(value: string | null | undefined): string | null {
   return value && value.trim() !== '' ? value : null;
 }
@@ -160,20 +133,6 @@ export function useCreateProject() {
         created_by: string;
       }
     ) => {
-      if (!isSupabaseConfigured()) {
-        const lead = MOCK_USERS.find((u) => u.id === input.lead_id);
-        return {
-          id: `p${Date.now()}`,
-          ...input,
-          lead,
-          members: lead ? [lead] : [],
-          task_count: 0,
-          completed_task_count: 0,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        } as Project;
-      }
-
       const { data, error } = await supabase
         .from('projects')
         .insert({
@@ -213,8 +172,6 @@ export function useUpdateProject() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, updates }: { id: string; updates: Partial<Project> }) => {
-      if (!isSupabaseConfigured()) return updates as Project;
-
       const safeUpdates = sanitizeProjectUpdate(updates);
 
       const { data, error } = await supabase
@@ -249,7 +206,6 @@ export function useDeleteProject() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, name }: { id: string; name: string }) => {
-      if (!isSupabaseConfigured()) return;
       await notifyProjectStakeholdersAdminAction({
         projectId: id,
         type: 'project.deleted',

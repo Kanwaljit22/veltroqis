@@ -27,6 +27,28 @@ export function formatTimeAgo(date: string | Date | null | undefined): string {
   return formatDistanceToNow(d, { addSuffix: true });
 }
 
+/**
+ * Computes a human-readable month-over-month change string and its sentiment
+ * from a current and previous count. Used to drive StatCard change labels
+ * dynamically instead of hardcoded strings.
+ */
+export function formatStatChange(
+  current: number,
+  previous: number,
+): { text: string; type: 'positive' | 'negative' | 'neutral' } {
+  if (previous === 0) {
+    if (current === 0) return { text: 'No change from last month', type: 'neutral' };
+    return { text: `+${current} new this month`, type: 'positive' };
+  }
+  const diff = current - previous;
+  if (diff === 0) return { text: 'No change from last month', type: 'neutral' };
+  const pct = ((Math.abs(diff) / previous) * 100).toFixed(1);
+  return {
+    text: `${diff > 0 ? '+' : '-'}${pct}% from last month`,
+    type: diff > 0 ? 'positive' : 'negative',
+  };
+}
+
 export function formatFileSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;

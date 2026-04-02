@@ -1,7 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-import { supabase, isSupabaseConfigured, isSchemaError } from '../lib/supabase';
+import { supabase, isSchemaError } from '../lib/supabase';
 import { QUERY_KEYS } from '../lib/queryKeys';
-import { MOCK_ACTIVITY_LOGS } from '../lib/mockData';
 import type { ActivityLog } from '../types';
 
 export function useEntityActivity(
@@ -13,13 +12,6 @@ export function useEntityActivity(
     queryKey: QUERY_KEYS.entityActivity(entityType, entityId, limit),
     queryFn: async (): Promise<ActivityLog[]> => {
       if (!entityId) return [];
-
-      if (!isSupabaseConfigured()) {
-        return MOCK_ACTIVITY_LOGS.filter((a) => a.entity_id === entityId).slice(
-          0,
-          limit
-        );
-      }
 
       const { data, error } = await supabase
         .from('activity_logs')
@@ -41,4 +33,3 @@ export function useEntityActivity(
     staleTime: 15_000,
   });
 }
-

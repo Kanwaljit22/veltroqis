@@ -1,47 +1,23 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { isSupabaseConfigured } from '../lib/supabase';
-import { MOCK_STANDUP_SESSIONS, MOCK_USERS, MOCK_TASKS } from '../lib/mockData';
 import { QUERY_KEYS } from '../lib/queryKeys';
 import { toast } from '../components/ui/Toast';
 import type { StandupSession, StandupEntry, StandupBlocker, StandupTaskLink } from '../types';
 
-// In-memory store so mock mutations persist within the session
-let _sessions: StandupSession[] = MOCK_STANDUP_SESSIONS.map((s) => ({
-  ...s,
-  entries: s.entries.map((e) => ({
-    ...e,
-    user: MOCK_USERS.find((u) => u.id === e.user_id),
-    yesterday: e.yesterday.map((y) => ({
-      ...y,
-      task: y.task_id ? MOCK_TASKS.find((t) => t.id === y.task_id) : undefined,
-    })),
-    today: e.today.map((td) => ({
-      ...td,
-      task: td.task_id ? MOCK_TASKS.find((t) => t.id === td.task_id) : undefined,
-    })),
-    blockers: e.blockers.map((b) => ({
-      ...b,
-      task: b.task_id ? MOCK_TASKS.find((t) => t.id === b.task_id) : undefined,
-    })),
-  })),
-}));
+// Daily Scrum / Stand-up data is maintained in-memory until a dedicated
+// Supabase schema is added. Mutations update the local store and React Query
+// cache; data does not persist across page reloads.
+
+let _sessions: StandupSession[] = [];
 
 // ─── Queries ──────────────────────────────────────────────────────────────────
 
 export function useStandupSessions(projectId?: string) {
   return useQuery({
     queryKey: QUERY_KEYS.standupSessions(projectId),
-    queryFn: async (): Promise<StandupSession[]> => {
-      if (!isSupabaseConfigured()) {
-        return projectId
-          ? _sessions.filter((s) => s.project_id === projectId)
-          : [..._sessions];
-      }
-      // Supabase integration point — extend when table is added to schema
-      return projectId
+    queryFn: (): StandupSession[] =>
+      projectId
         ? _sessions.filter((s) => s.project_id === projectId)
-        : [..._sessions];
-    },
+        : [..._sessions],
     staleTime: 15_000,
   });
 }
@@ -50,12 +26,8 @@ export function useTodayStandup(projectId: string) {
   const today = new Date().toISOString().split('T')[0];
   return useQuery({
     queryKey: QUERY_KEYS.standupToday(projectId),
-    queryFn: async (): Promise<StandupSession | null> => {
-      if (!isSupabaseConfigured()) {
-        return _sessions.find((s) => s.project_id === projectId && s.date === today) ?? null;
-      }
-      return _sessions.find((s) => s.project_id === projectId && s.date === today) ?? null;
-    },
+    queryFn: (): StandupSession | null =>
+      _sessions.find((s) => s.project_id === projectId && s.date === today) ?? null,
     staleTime: 10_000,
   });
 }
@@ -174,14 +146,12 @@ export function useSubmitStandupEntry() {
       today: StandupTaskLink[];
       blockers: Omit<StandupBlocker, 'id'>[];
     }): Promise<StandupEntry> => {
-      const { session_id, project_id, user_id, yesterday, today, blockers } = input;
-      const user = MOCK_USERS.find((u) => u.id === user_id);
+      const { session_id, user_id, yesterday, today, blockers } = input;
 
       const entry: StandupEntry = {
         id: `se-${Date.now()}`,
         session_id,
         user_id,
-        user,
         yesterday,
         today,
         blockers: blockers.map((b, i) => ({ ...b, id: `sb-${Date.now()}-${i}` })),
@@ -199,7 +169,7 @@ export function useSubmitStandupEntry() {
         return { ...s, entries: updatedEntries, updated_at: new Date().toISOString() };
       });
 
-      return { ...entry, project_id } as StandupEntry & { project_id: string };
+      return { ...entry, project_id: input.project_id } as StandupEntry & { project_id: string };
     },
     onSuccess: (_data, vars) => {
       qc.invalidateQueries({ queryKey: QUERY_KEYS.standupSessions(vars.project_id) });

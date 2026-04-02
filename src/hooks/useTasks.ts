@@ -1,6 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase, isSupabaseConfigured, isSchemaError, isNotFoundError } from '../lib/supabase';
-import { MOCK_TASKS, MOCK_USERS } from '../lib/mockData';
+import { supabase, isSchemaError, isNotFoundError } from '../lib/supabase';
 import { QUERY_KEYS } from '../lib/queryKeys';
 import { toast } from '../components/ui/Toast';
 import { notifyProjectStakeholdersAdminAction } from '../lib/notifyStakeholders';
@@ -14,7 +13,6 @@ export function useTasks(projectId?: string) {
     queryKey: QUERY_KEYS.tasks(projectId),
     queryFn: async (): Promise<Task[]> => {
       if (!projectId) return [];
-      if (!isSupabaseConfigured()) return MOCK_TASKS.filter((t) => t.project_id === projectId);
 
       const { data: tasks, error } = await supabase
         .from('tasks')
@@ -48,9 +46,7 @@ export function useTask(id: string) {
     queryKey: QUERY_KEYS.task(id),
     queryFn: async (): Promise<Task | null> => {
       if (!id) return null;
-      if (!isSupabaseConfigured()) return MOCK_TASKS.find((t) => t.id === id) ?? null;
 
-      // maybeSingle → null (not 406) when task doesn't exist or RLS blocks it
       const { data: task, error } = await supabase
         .from('tasks')
         .select('*')
@@ -82,12 +78,6 @@ export function useTask(id: string) {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-/**
- * Strips client-side enrichment fields that do not exist as columns in the
- * `tasks` table.  Spreading a full `Task` object into `.update()` would send
- * `assignees`, `reporter`, `subtasks`, `project`, etc. to PostgREST, which
- * rejects unknown columns with a 500 error.
- */
 function sanitizeTaskUpdate(updates: Partial<Task>) {
   const {
     assignees: _assignees,
@@ -109,21 +99,6 @@ export function useCreateTask() {
     mutationFn: async (
       input: Pick<Task, 'project_id' | 'title' | 'description' | 'status' | 'priority' | 'assignee_ids' | 'reporter_id' | 'due_date'>
     ) => {
-      if (!isSupabaseConfigured()) {
-        return {
-          id: `t${Date.now()}`,
-          ...input,
-          assignees: input.assignee_ids
-            .map((id) => MOCK_USERS.find((u) => u.id === id))
-            .filter(Boolean) as User[],
-          reporter: MOCK_USERS.find((u) => u.id === input.reporter_id),
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          comment_count: 0,
-          order_index: 0,
-        } as Task;
-      }
-
       const { data, error } = await supabase
         .from('tasks')
         .insert(input)
@@ -136,7 +111,7 @@ export function useCreateTask() {
     onSuccess: (data) => {
       qc.invalidateQueries({ queryKey: QUERY_KEYS.tasks(data.project_id) });
       qc.invalidateQueries({ queryKey: QUERY_KEYS.tasks() });
-      qc.invalidateQueries({ queryKey: QUERY_KEYS.dashboardStats });
+      qc.invalidateQueries({ queryKey: QUERY_KEYS.dashboardBase });
       qc.invalidateQueries({ queryKey: QUERY_KEYS.activityLogs });
       qc.invalidateQueries({ queryKey: ['activity'] });
       toast.success('Task created');
@@ -166,8 +141,6 @@ export function useUpdateTask() {
       projectId: string;
       updates: Partial<Task>;
     }) => {
-      if (!isSupabaseConfigured()) return { id, projectId, ...updates } as Task;
-
       const safeUpdates = sanitizeTaskUpdate(updates);
 
       const { data, error } = await supabase
@@ -180,7 +153,6 @@ export function useUpdateTask() {
       if (!data) throw new Error('Task not found or update was blocked by permissions');
       return data as Task;
     },
-    // Optimistic update for Kanban drag-and-drop feel
     onMutate: async ({ id, projectId, updates }) => {
       await qc.cancelQueries({ queryKey: QUERY_KEYS.tasks(projectId) });
       const previous = qc.getQueryData<Task[]>(QUERY_KEYS.tasks(projectId));
@@ -201,7 +173,6 @@ export function useUpdateTask() {
       );
       if (keys.length === 0) return;
 
-      // Field-specific toast notifications
       if ('priority' in updates && updates.priority) {
         toast.success(
           'Priority updated',
@@ -233,7 +204,7 @@ export function useUpdateTask() {
       if (!vars) return;
       qc.invalidateQueries({ queryKey: QUERY_KEYS.tasks(vars.projectId) });
       qc.invalidateQueries({ queryKey: QUERY_KEYS.task(vars.id) });
-      qc.invalidateQueries({ queryKey: QUERY_KEYS.dashboardStats });
+      qc.invalidateQueries({ queryKey: QUERY_KEYS.dashboardBase });
       qc.invalidateQueries({ queryKey: QUERY_KEYS.activityLogs });
       qc.invalidateQueries({ queryKey: ['activity'] });
     },
@@ -244,14 +215,13 @@ export function useDeleteTask() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, projectId }: { id: string; projectId: string }) => {
-      if (!isSupabaseConfigured()) return { id, projectId };
       const { error } = await supabase.from('tasks').delete().eq('id', id);
       if (error) throw new Error(`[tasks.delete] ${error.message} (code: ${error.code})`);
       return { id, projectId };
     },
     onSuccess: ({ projectId }) => {
       qc.invalidateQueries({ queryKey: QUERY_KEYS.tasks(projectId) });
-      qc.invalidateQueries({ queryKey: QUERY_KEYS.dashboardStats });
+      qc.invalidateQueries({ queryKey: QUERY_KEYS.dashboardBase });
       qc.invalidateQueries({ queryKey: QUERY_KEYS.activityLogs });
       qc.invalidateQueries({ queryKey: ['activity'] });
       toast.success('Task deleted');

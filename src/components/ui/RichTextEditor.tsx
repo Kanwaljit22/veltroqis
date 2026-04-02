@@ -6,7 +6,7 @@ import Placeholder from '@tiptap/extension-placeholder';
 import {
   Bold, Italic, List, ListOrdered, ImagePlus, SquarePilcrow,
 } from 'lucide-react';
-import { uploadSprintGoalImage, isSupabaseConfigured } from '../../lib/supabase';
+import { uploadSprintGoalImage } from '../../lib/supabase';
 import { cn } from '../../lib/utils';
 import { toast } from './Toast';
 
@@ -59,7 +59,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
       }),
       Placeholder.configure({ placeholder }),
       Image.configure({
-        allowBase64: !isSupabaseConfigured(),
+        allowBase64: false,
         HTMLAttributes: {
           class: 'max-w-full h-auto rounded-md border border-slate-200 my-2',
         },
