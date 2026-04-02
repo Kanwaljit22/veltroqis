@@ -112,7 +112,7 @@ export function useActivityLogs(limit = 10) {
         if (isSchemaError(error)) return [];
         throw new Error(error.message);
       }
-      return (data ?? []) as ActivityLog[];
+      return (data ?? []) as unknown as ActivityLog[];
     },
     enabled: isAdmin,
     staleTime: 15_000,

@@ -81,7 +81,7 @@ export const ProjectsPage: React.FC = () => {
     setEditTarget(p);
     setValue('name', p.name);
     setValue('description', p.description || '');
-    setValue('lead_id', p.lead_id);
+    setValue('lead_id', p.lead_id ?? '');
     setValue('status', p.status);
     setValue('start_date', p.start_date || '');
     setValue('deadline', p.deadline || '');

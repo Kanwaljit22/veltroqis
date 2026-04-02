@@ -60,7 +60,7 @@ type UserProfileUpdate = Pick<
   'full_name' | 'avatar_url' | 'designation' | 'department' | 'phone' | 'location' | 'bio'
 >;
 
-type UserAdminUpdate = UserProfileUpdate & Pick<User, 'role' | 'status'>;
+type UserAdminUpdate = UserProfileUpdate & Pick<User, 'email' | 'role' | 'status'>;
 
 // ─── Mutations ────────────────────────────────────────────────────────────────
 

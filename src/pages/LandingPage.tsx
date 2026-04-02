@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, type Variants } from 'framer-motion';
 import {
   Zap, GitPullRequest, Bug, Users, BarChart3, Calendar,
   ArrowRight, Layers, Target, Shield, Rocket, Activity,
@@ -42,29 +42,33 @@ const STEPS = [
 
 // ─── Shared animation variants ────────────────────────────────────────────────
 
-const fadeUp = {
+type BezierEase = [number, number, number, number];
+const EASE_QUART:  BezierEase = [0.25, 0.46, 0.45, 0.94];
+const EASE_SPRING: BezierEase = [0.34, 1.56, 0.64, 1];
+
+const fadeUp: Variants = {
   hidden:  { opacity: 0, y: 26 },
-  visible: { opacity: 1, y: 0,  transition: { duration: 0.62, ease: [0.25, 0.46, 0.45, 0.94] } },
+  visible: { opacity: 1, y: 0,  transition: { duration: 0.62, ease: EASE_QUART } },
 };
 
-const staggerContainer = {
+const staggerContainer: Variants = {
   hidden:  {},
   visible: { transition: { staggerChildren: 0.1 } },
 };
 
-const staggerContainerSlow = {
+const staggerContainerSlow: Variants = {
   hidden:  {},
   visible: { transition: { staggerChildren: 0.07 } },
 };
 
-const cardVariant = {
+const cardVariant: Variants = {
   hidden:  { opacity: 0, y: 22 },
-  visible: { opacity: 1, y: 0,  transition: { duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] } },
+  visible: { opacity: 1, y: 0,  transition: { duration: 0.5, ease: EASE_QUART } },
 };
 
-const scaleIn = {
+const scaleIn: Variants = {
   hidden:  { opacity: 0, scale: 0.88 },
-  visible: { opacity: 1, scale: 1,    transition: { duration: 0.55, ease: [0.34, 1.56, 0.64, 1] } },
+  visible: { opacity: 1, scale: 1,    transition: { duration: 0.55, ease: EASE_SPRING } },
 };
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -261,7 +265,7 @@ export const LandingPage: React.FC = () => {
                     style={{ display: 'block' }}
                     initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.65, delay: 0.2 + i * 0.14, ease: [0.25, 0.46, 0.45, 0.94] }}
+                    transition={{ duration: 0.65, delay: 0.2 + i * 0.14, ease: EASE_QUART }}
                   >
                     {line}
                   </motion.span>
@@ -269,9 +273,9 @@ export const LandingPage: React.FC = () => {
                 {/* Gradient line — clip-path wipe reveal */}
                 <motion.span
                   className="grad"
-                  initial={{ clipPath: 'inset(0 100% 0 0)', WebkitClipPath: 'inset(0 100% 0 0)' }}
-                  animate={{ clipPath: 'inset(0 0% 0 0)',   WebkitClipPath: 'inset(0 0% 0 0)' }}
-                  transition={{ duration: 0.85, delay: 0.54, ease: [0.77, 0, 0.175, 1] }}
+                  initial={{ clipPath: 'inset(0 100% 0 0)' }}
+                  animate={{ clipPath: 'inset(0 0% 0 0)' }}
+                  transition={{ duration: 0.85, delay: 0.54, ease: [0.77, 0, 0.175, 1] as BezierEase }}
                 >
                   Ship together.
                 </motion.span>
@@ -321,7 +325,7 @@ export const LandingPage: React.FC = () => {
               style={{ position: 'relative' }}
               initial={{ opacity: 0, x: 40 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.75, delay: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
+              transition={{ duration: 0.75, delay: 0.35, ease: EASE_QUART }}
             >
               <motion.div
                 animate={{ y: [0, -14, 0] }}
@@ -502,7 +506,7 @@ export const LandingPage: React.FC = () => {
                 key={s.label}
                 variants={{
                   hidden:  { opacity: 0, scale: 0.8, y: 16 },
-                  visible: { opacity: 1, scale: 1,   y: 0, transition: { duration: 0.55, ease: [0.34, 1.56, 0.64, 1] } },
+                  visible: { opacity: 1, scale: 1,   y: 0, transition: { duration: 0.55, ease: EASE_SPRING } },
                 }}
               >
                 <div className="lp-stat-n">{s.n}</div>

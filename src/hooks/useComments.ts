@@ -30,7 +30,7 @@ export function useComments(entityType: Comment['entity_type'], entityId: string
         if (isSchemaError(error)) return [];
         throw new Error(error.message);
       }
-      return (data ?? []) as Comment[];
+      return (data ?? []) as unknown as Comment[];
     },
     enabled: !!entityId,
     staleTime: 15_000,

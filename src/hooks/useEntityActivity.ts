@@ -35,7 +35,7 @@ export function useEntityActivity(
         if (isSchemaError(error)) return [];
         throw new Error(error.message);
       }
-      return (data ?? []) as ActivityLog[];
+      return (data ?? []) as unknown as ActivityLog[];
     },
     enabled: !!entityId,
     staleTime: 15_000,
