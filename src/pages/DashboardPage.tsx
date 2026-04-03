@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   CheckCircle2, FolderKanban, AlertOctagon, AlertTriangle,
-  CalendarDays, Clock,
+  CalendarDays, Clock, ChevronRight,
 } from 'lucide-react';
 import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid,
@@ -11,6 +11,7 @@ import { StatCard } from '../components/ui/Card';
 import { Avatar } from '../components/ui/Avatar';
 import { ProgressBar } from '../components/ui/Progress';
 import { SkeletonStatCard, Skeleton } from '../components/ui/Skeleton';
+import { Modal } from '../components/ui/Modal';
 import {
   cn, formatTimeAgo, formatStatChange,
   formatActivityLogSummary, PROJECT_STATUS_LABELS,
@@ -74,6 +75,25 @@ function projectHealthBarColor(completion: number, daysLeft: number | null): str
   return 'bg-red-400';
 }
 
+// ─── Shared activity row (used in both the card preview and the modal) ────────
+
+const ActivityLogRow: React.FC<{
+  log: { id: string; action: string; entity_name: string; created_at: string; user?: { full_name?: string; avatar_url?: string } | null };
+}> = ({ log }) => (
+  <div className="flex items-center gap-3 py-3">
+    <Avatar src={log.user?.avatar_url} name={log.user?.full_name || ''} size="sm" />
+    <div className="flex-1 min-w-0">
+      <p className="text-sm font-medium text-hi truncate">{log.user?.full_name ?? 'System'}</p>
+      <p className="text-xs text-dim truncate">
+        {formatActivityLogSummary(log.action, log.entity_name)}
+      </p>
+    </div>
+    <span className="text-xs text-weak whitespace-nowrap shrink-0">
+      {formatTimeAgo(log.created_at)}
+    </span>
+  </div>
+);
+
 // ─── Dashboard Page ───────────────────────────────────────────────────────────
 
 export const DashboardPage: React.FC = () => {
@@ -84,8 +104,10 @@ export const DashboardPage: React.FC = () => {
 
   const isAdmin = user?.role === 'admin';
 
+  const [activityModalOpen, setActivityModalOpen] = useState(false);
+
   const stats      = useDashboardStats();
-  const activity   = useActivityLogs(15);
+  const activity   = useActivityLogs(50);
   const taskChart  = useTaskChartData();
   const portfolio  = useProjectStatusBreakdown();
   const sevTrend   = useIssueSeverityTrend();
@@ -429,45 +451,64 @@ export const DashboardPage: React.FC = () => {
           )}
         </div>
 
-        {/* Recent Activity (admins only) */}
+        {/* Team Pulse (admins only) */}
         {isAdmin && (
-          <div className="bg-surface rounded-xl border border-base shadow-sm p-5">
-            <div className="mb-4">
-              <h3 className="font-semibold text-hi">Team Pulse</h3>
-              <p className="text-xs text-dim">Latest actions across the organisation</p>
-            </div>
-            <div className="overflow-y-auto divide-y divide-subtle pr-1" style={{ maxHeight: '300px' }}>
-              {activity.isLoading ? (
-                Array.from({ length: 5 }).map((_, i) => (
-                  <div key={i} className="flex items-center gap-3 py-3">
-                    <Skeleton className="h-8 w-8 rounded-full" />
-                    <div className="flex-1 space-y-1.5">
-                      <Skeleton className="h-3 w-32" />
-                      <Skeleton className="h-2.5 w-24" />
+          <>
+            <div className="bg-surface rounded-xl border border-base shadow-sm p-5 flex flex-col">
+              <div className="mb-4">
+                <h3 className="font-semibold text-hi">Team Pulse</h3>
+                <p className="text-xs text-dim">Latest actions across the organisation</p>
+              </div>
+
+              {/* Preview — first 5 entries, no internal scroll */}
+              <div className="divide-y divide-subtle flex-1">
+                {activity.isLoading ? (
+                  Array.from({ length: 5 }).map((_, i) => (
+                    <div key={i} className="flex items-center gap-3 py-3">
+                      <Skeleton className="h-8 w-8 rounded-full" />
+                      <div className="flex-1 space-y-1.5">
+                        <Skeleton className="h-3 w-32" />
+                        <Skeleton className="h-2.5 w-24" />
+                      </div>
+                      <Skeleton className="h-2.5 w-14" />
                     </div>
-                    <Skeleton className="h-2.5 w-14" />
-                  </div>
-                ))
-              ) : activity.data?.length === 0 ? (
-                <p className="text-sm text-weak text-center py-6">No activity yet</p>
-              ) : (
-                activity.data?.map((log) => (
-                  <div key={log.id} className="flex items-center gap-3 py-3">
-                    <Avatar src={log.user?.avatar_url} name={log.user?.full_name || ''} size="sm" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-hi truncate">{log.user?.full_name ?? 'System'}</p>
-                      <p className="text-xs text-dim truncate">
-                        {formatActivityLogSummary(log.action, log.entity_name)}
-                      </p>
-                    </div>
-                    <span className="text-xs text-weak whitespace-nowrap">
-                      {formatTimeAgo(log.created_at)}
-                    </span>
-                  </div>
-                ))
+                  ))
+                ) : activity.data?.length === 0 ? (
+                  <p className="text-sm text-weak text-center py-6">No activity yet</p>
+                ) : (
+                  activity.data?.slice(0, 5).map((log) => (
+                    <ActivityLogRow key={log.id} log={log} />
+                  ))
+                )}
+              </div>
+
+              {/* See more button — only shown when there are more than 5 entries */}
+              {!activity.isLoading && (activity.data?.length ?? 0) > 5 && (
+                <button
+                  onClick={() => setActivityModalOpen(true)}
+                  className="mt-3 w-full flex items-center justify-center gap-1.5 pt-3 border-t border-subtle text-xs font-medium text-dim hover:text-hi transition-colors group"
+                >
+                  See all {activity.data?.length} activities
+                  <ChevronRight className="h-3.5 w-3.5 group-hover:translate-x-0.5 transition-transform" />
+                </button>
               )}
             </div>
-          </div>
+
+            {/* Activity history modal */}
+            <Modal
+              open={activityModalOpen}
+              onClose={() => setActivityModalOpen(false)}
+              title="Team Pulse"
+              description="Complete activity history across the organisation"
+              size="xl"
+            >
+              <div className="divide-y divide-subtle overflow-y-auto" style={{ maxHeight: '60vh' }}>
+                {activity.data?.map((log) => (
+                  <ActivityLogRow key={log.id} log={log} />
+                ))}
+              </div>
+            </Modal>
+          </>
         )}
       </div>
     </div>

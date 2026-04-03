@@ -99,14 +99,14 @@ function computeInsights(session: StandupSession, tasks: Task[]) {
 const AttendanceBadge: React.FC<{ attended: boolean; submitted: boolean }> = ({ attended, submitted }) => {
   if (attended && submitted) {
     return (
-      <span className="flex items-center gap-1 text-[10px] font-semibold text-green-700 bg-green-50 px-2 py-0.5 rounded-full border border-green-200">
+      <span className="flex items-center gap-1 text-[10px] font-semibold text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-950/40 px-2 py-0.5 rounded-full border border-green-200 dark:border-green-800">
         <CircleCheck className="h-3 w-3" /> Submitted
       </span>
     );
   }
   if (attended) {
     return (
-      <span className="flex items-center gap-1 text-[10px] font-semibold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200">
+      <span className="flex items-center gap-1 text-[10px] font-semibold text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 px-2 py-0.5 rounded-full border border-blue-200 dark:border-blue-800">
         <CircleDot className="h-3 w-3" /> Attending
       </span>
     );
@@ -134,8 +134,8 @@ const BlockerCard: React.FC<{
     <div className={cn(
       'flex items-start gap-3 p-3 rounded-xl border transition-all',
       blocker.resolved
-        ? 'bg-green-50 border-green-200 opacity-60'
-        : 'bg-red-50 border-red-200'
+        ? 'bg-green-50 dark:bg-green-950/40 border-green-200 dark:border-green-800 opacity-60'
+        : 'bg-red-50 dark:bg-red-950/40 border-red-200 dark:border-red-800'
     )}>
       <div className={cn('h-2 w-2 rounded-full mt-1.5 shrink-0', blocker.resolved ? 'bg-green-500' : cfg.dot)} />
       <div className="flex-1 min-w-0">
@@ -162,7 +162,7 @@ const BlockerCard: React.FC<{
       {!blocker.resolved && canResolve && (
         <button
           onClick={() => resolveBlocker.mutate({ sessionId, entryId: entry.id, blockerId: blocker.id, projectId })}
-          className="shrink-0 flex items-center gap-1 text-[10px] font-semibold text-green-700 bg-surface hover:bg-green-50 border border-green-200 px-2 py-1 rounded-lg transition-colors"
+          className="shrink-0 flex items-center gap-1 text-[10px] font-semibold text-green-700 dark:text-green-400 bg-surface hover:bg-green-50 dark:hover:bg-green-950/40 border border-green-200 dark:border-green-800 px-2 py-1 rounded-lg transition-colors"
           title="Mark as resolved"
         >
           <CheckCheck className="h-3 w-3" /> Resolve
@@ -203,7 +203,7 @@ const MemberEntryCard: React.FC<{
         {entry.user ? (
           <Avatar src={entry.user.avatar_url} name={entry.user.full_name} size="sm" />
         ) : (
-          <div className="h-8 w-8 rounded-full bg-slate-200 shrink-0" />
+          <div className="h-8 w-8 rounded-full bg-slate-200 dark:bg-slate-700 shrink-0" />
         )}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
@@ -219,7 +219,7 @@ const MemberEntryCard: React.FC<{
         </div>
         <div className="flex items-center gap-2 shrink-0">
           {hasBlockers && (
-            <span className="flex items-center gap-1 text-[10px] font-semibold text-red-700 bg-red-50 px-2 py-0.5 rounded-full border border-red-200">
+            <span className="flex items-center gap-1 text-[10px] font-semibold text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-950/40 px-2 py-0.5 rounded-full border border-red-200 dark:border-red-800">
               <ShieldAlert className="h-3 w-3" />
               {entry.blockers.filter((b) => !b.resolved).length} blocker{entry.blockers.filter((b) => !b.resolved).length > 1 ? 's' : ''}
             </span>
@@ -453,8 +453,8 @@ const SummaryPanel: React.FC<{ session: StandupSession }> = ({ session }) => {
       </div>
 
       {s.notes && (
-        <div className="bg-amber-50 border border-amber-200 rounded-xl p-3">
-          <p className="text-xs font-medium text-amber-700 mb-1">PM Notes</p>
+        <div className="bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 rounded-xl p-3">
+          <p className="text-xs font-medium text-amber-700 dark:text-amber-400 mb-1">PM Notes</p>
           <p className="text-sm text-body">{s.notes}</p>
         </div>
       )}
@@ -639,13 +639,13 @@ const SubmitEntryModal: React.FC<{
           )}
           <div className="space-y-3">
             {blockerFields.map((field, i) => (
-              <div key={field.id} className="bg-red-50 border border-red-100 rounded-xl p-3 space-y-2">
+              <div key={field.id} className="bg-red-50 dark:bg-red-950/40 border border-red-100 dark:border-red-900 rounded-xl p-3 space-y-2">
                 <div className="flex items-start gap-2">
                   <div className="flex-1">
                     <input
                       {...register(`blockers.${i}.description`)}
                       placeholder="Describe the blocker clearly..."
-                      className="w-full text-sm border border-red-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-400 bg-surface"
+                      className="w-full text-sm border border-red-200 dark:border-red-800 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-400 bg-surface text-hi"
                     />
                     {errors.blockers?.[i]?.description && (
                       <p className="text-[10px] text-red-500 mt-0.5">{errors.blockers[i]?.description?.message}</p>
@@ -732,7 +732,7 @@ const CreateSessionModal: React.FC<{
             ] as const).map((m) => (
               <label key={m.value} className="relative cursor-pointer">
                 <input type="radio" value={m.value} {...register('mode')} className="sr-only peer" />
-                <div className="p-3 rounded-xl border-2 border-base peer-checked:border-blue-500 peer-checked:bg-blue-50 transition-all">
+                <div className="p-3 rounded-xl border-2 border-base peer-checked:border-blue-500 peer-checked:bg-blue-50 dark:peer-checked:bg-blue-950/40 transition-all">
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-dim peer-checked:text-blue-600">{m.icon}</span>
                     <span className="text-sm font-semibold text-hi">{m.label}</span>
@@ -956,7 +956,7 @@ export const DailyScrumPage: React.FC = () => {
               variant="outline"
               icon={<CheckCheck className="h-4 w-4" />}
               onClick={() => setCompleteOpen(true)}
-              className="border-green-300 text-green-700 hover:bg-green-50"
+              className="border-green-300 dark:border-green-700 text-green-700 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-950/40"
             >
               Complete
             </Button>
@@ -1059,8 +1059,8 @@ export const DailyScrumPage: React.FC = () => {
             <div key={i} className={cn(
               'flex items-start gap-2 px-3 py-2 rounded-xl border text-sm',
               insight.type === 'warning'
-                ? 'bg-amber-50 border-amber-200 text-amber-800'
-                : 'bg-blue-50 border-blue-200 text-blue-800'
+                ? 'bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300'
+                : 'bg-blue-50 dark:bg-blue-950/40 border-blue-200 dark:border-blue-800 text-blue-800 dark:text-blue-300'
             )}>
               {insight.type === 'warning'
                 ? <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
@@ -1173,10 +1173,10 @@ export const DailyScrumPage: React.FC = () => {
                 </div>
 
                 {allBlockers.length === 0 ? (
-                  <div className="bg-green-50 border border-green-200 rounded-xl p-8 text-center">
+                  <div className="bg-green-50 dark:bg-green-950/40 border border-green-200 dark:border-green-800 rounded-xl p-8 text-center">
                     <CheckCircle2 className="h-10 w-10 text-green-400 mx-auto mb-2" />
-                    <p className="font-semibold text-green-800">No blockers today!</p>
-                    <p className="text-sm text-green-600">The team is unblocked — great work!</p>
+                    <p className="font-semibold text-green-800 dark:text-green-300">No blockers today!</p>
+                    <p className="text-sm text-green-600 dark:text-green-400">The team is unblocked — great work!</p>
                   </div>
                 ) : (
                   <div className="space-y-2">
