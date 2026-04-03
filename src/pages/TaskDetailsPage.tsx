@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import {
   ArrowLeft,
   Calendar,
@@ -49,7 +49,6 @@ import type { TaskLabel, TaskPriority, TaskStatus } from '../types';
 
 export const TaskDetailsPage: React.FC = () => {
   const { id = '' } = useParams<{ id: string }>();
-  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { user: currentUser } = useAuthStore();
   const { can } = usePermissions();
@@ -76,10 +75,7 @@ export const TaskDetailsPage: React.FC = () => {
   const { data: task, isLoading } = useTask(id);
   const { data: project, isLoading: projectLoading } = useProject(task?.project_id ?? '');
 
-  const fromTasksBoard = searchParams.get('from') === 'tasks';
-  const boardCrumb = fromTasksBoard
-    ? { to: '/tasks' as const, label: 'Task Board' }
-    : { to: '/scrumboard' as const, label: 'Scrumboard' };
+  const boardCrumb = { to: '/scrumboard' as const, label: 'Scrumboard' };
 
   const { data: comments = [] } = useComments('task', id);
   const { data: activity = [] } = useEntityActivity('task', id, 8);

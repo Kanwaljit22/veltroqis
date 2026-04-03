@@ -131,24 +131,38 @@ export function useCreateProject() {
     mutationFn: async (
       input: Pick<Project, 'name' | 'description' | 'status' | 'lead_id' | 'start_date' | 'deadline'> & {
         created_by: string;
+        /** IDs of users to add as project members (creator is always included) */
+        member_ids?: string[];
       }
     ) => {
+      const { member_ids, ...projectFields } = input;
+
       const { data, error } = await supabase
         .from('projects')
         .insert({
-          ...input,
-          start_date: normalizeDate(input.start_date),
-          deadline: normalizeDate(input.deadline),
+          ...projectFields,
+          start_date: normalizeDate(projectFields.start_date),
+          deadline: normalizeDate(projectFields.deadline),
         })
         .select()
         .maybeSingle();
       if (error) throw new Error(`[projects.insert] ${error.message} (code: ${error.code})`);
       if (!data) throw new Error('Project was created but could not be retrieved');
 
-      await supabase.from('project_members').insert({
+      // Deduplicate: always include creator; merge with selected members
+      const memberSet = new Set([input.created_by, ...(member_ids ?? [])]);
+      const memberRows = Array.from(memberSet).map((user_id) => ({
         project_id: data.id,
-        user_id: input.created_by,
-      });
+        user_id,
+      }));
+
+      if (memberRows.length > 0) {
+        const { error: membersError } = await supabase
+          .from('project_members')
+          .insert(memberRows);
+        if (membersError) throw new Error(`[project_members.insert] ${membersError.message}`);
+      }
+
       return data as Project;
     },
     onSuccess: (data) => {
@@ -171,7 +185,16 @@ export function useCreateProject() {
 export function useUpdateProject() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, updates }: { id: string; updates: Partial<Project> }) => {
+    mutationFn: async ({
+      id,
+      updates,
+      member_ids,
+    }: {
+      id: string;
+      updates: Partial<Project>;
+      /** When provided, replaces the full project_members set for this project */
+      member_ids?: string[];
+    }) => {
       const safeUpdates = sanitizeProjectUpdate(updates);
 
       const { data, error } = await supabase
@@ -182,6 +205,23 @@ export function useUpdateProject() {
         .maybeSingle();
       if (error) throw new Error(`[projects.update] ${error.message} (code: ${error.code})`);
       if (!data) throw new Error('Project not found or update was blocked by permissions');
+
+      // Sync team members: delete all then re-insert the new set
+      if (member_ids !== undefined) {
+        const { error: delError } = await supabase
+          .from('project_members')
+          .delete()
+          .eq('project_id', id);
+        if (delError) throw new Error(`[project_members.delete] ${delError.message}`);
+
+        if (member_ids.length > 0) {
+          const { error: insError } = await supabase
+            .from('project_members')
+            .insert(member_ids.map((user_id) => ({ project_id: id, user_id })));
+          if (insError) throw new Error(`[project_members.insert] ${insError.message}`);
+        }
+      }
+
       return data as Project;
     },
     onSuccess: (data, { id }) => {

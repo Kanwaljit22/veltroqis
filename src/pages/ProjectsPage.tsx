@@ -16,6 +16,7 @@ import { Dropdown } from '../components/ui/Dropdown';
 import { ProgressBar } from '../components/ui/Progress';
 import { AvatarGroup } from '../components/ui/Avatar';
 import { SkeletonCard, ErrorState } from '../components/ui/Skeleton';
+import { MultiUserSelect } from '../components/ui/MultiUserSelect';
 import { PROJECT_STATUS_LABELS, PROJECT_STATUS_COLORS, formatDate } from '../lib/utils';
 import { useProjects, useCreateProject, useUpdateProject, useDeleteProject } from '../hooks/useProjects';
 import { useUsers } from '../hooks/useUsers';
@@ -23,6 +24,9 @@ import { useAuthStore } from '../store/authStore';
 import { usePermissions, canViewAllProjects } from '../lib/permissions';
 import { PermissionGuard } from '../components/ui/PermissionGuard';
 import type { Project, ProjectStatus } from '../types';
+
+/** Roles permitted to be selected as Project Lead */
+const LEAD_ROLES = new Set(['admin', 'project_lead']);
 
 const schema = z.object({
   name: z.string().min(2, 'Name required'),
@@ -58,12 +62,20 @@ export const ProjectsPage: React.FC = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<Project | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Project | null>(null);
+  /** Controlled state for the Team Members multi-select (outside RHF) */
+  const [memberIds, setMemberIds] = useState<string[]>([]);
 
   const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
   });
 
-  const userOptions = users.map((u) => ({ value: u.id, label: u.full_name }));
+  /** Only admins and project leads can be assigned as Project Lead */
+  const leadOptions = users
+    .filter((u) => LEAD_ROLES.has(u.role))
+    .map((u) => ({ value: u.id, label: u.full_name }));
+
+  /** All active users are eligible as team members */
+  const memberOptions = users.map((u) => ({ value: u.id, label: u.full_name }));
 
   const filtered = projects.filter((p) => {
     const matchSearch = p.name.toLowerCase().includes(search.toLowerCase());
@@ -73,6 +85,7 @@ export const ProjectsPage: React.FC = () => {
 
   const openCreate = () => {
     reset({ name: '', description: '', lead_id: '', status: 'active' });
+    setMemberIds([]);
     setEditTarget(null);
     setModalOpen(true);
   };
@@ -85,6 +98,7 @@ export const ProjectsPage: React.FC = () => {
     setValue('status', p.status);
     setValue('start_date', p.start_date || '');
     setValue('deadline', p.deadline || '');
+    setMemberIds((p.members ?? []).map((m) => m.id));
     setModalOpen(true);
   };
 
@@ -100,6 +114,7 @@ export const ProjectsPage: React.FC = () => {
           start_date: data.start_date,
           deadline: data.deadline,
         },
+        member_ids: memberIds,
       });
     } else {
       await createProject.mutateAsync({
@@ -110,10 +125,12 @@ export const ProjectsPage: React.FC = () => {
         start_date: data.start_date,
         deadline: data.deadline,
         created_by: currentUser?.id ?? '',
+        member_ids: memberIds,
       });
     }
     setModalOpen(false);
     setEditTarget(null);
+    setMemberIds([]);
     reset();
   };
 
@@ -273,7 +290,7 @@ export const ProjectsPage: React.FC = () => {
       {/* Create/Edit Modal */}
       <Modal
         open={modalOpen}
-        onClose={() => { setModalOpen(false); setEditTarget(null); reset(); }}
+        onClose={() => { setModalOpen(false); setEditTarget(null); setMemberIds([]); reset(); }}
         title={editTarget ? 'Edit Project' : 'Create New Project'}
         description={editTarget ? 'Update project details' : 'Set up a new project for your team'}
         size="lg"
@@ -282,15 +299,30 @@ export const ProjectsPage: React.FC = () => {
           <Input label="Project Name" placeholder="e.g. Mobile App Redesign" error={errors.name?.message} {...register('name')} />
           <Textarea label="Description" placeholder="What is this project about?" rows={3} {...register('description')} />
           <div className="grid grid-cols-2 gap-4">
-            <Select label="Project Lead" options={userOptions} placeholder="Select lead" error={errors.lead_id?.message} {...register('lead_id')} />
+            <Select
+              label="Project Lead"
+              options={leadOptions}
+              placeholder="Select lead"
+              error={errors.lead_id?.message}
+              {...register('lead_id')}
+            />
             <Select label="Status" options={STATUS_OPTIONS} error={errors.status?.message} {...register('status')} />
           </div>
+          <MultiUserSelect
+            label="Team Members"
+            placeholder="Select team members..."
+            searchPlaceholder="Search by name..."
+            options={memberOptions}
+            value={memberIds}
+            onChange={setMemberIds}
+            hint="Select all users who will be working on this project"
+          />
           <div className="grid grid-cols-2 gap-4">
             <Input label="Start Date" type="date" {...register('start_date')} />
             <Input label="Deadline" type="date" {...register('deadline')} />
           </div>
           <ModalFooter>
-            <Button variant="outline" type="button" onClick={() => { setModalOpen(false); reset(); }}>Cancel</Button>
+            <Button variant="outline" type="button" onClick={() => { setModalOpen(false); setMemberIds([]); reset(); }}>Cancel</Button>
             <Button type="submit" loading={isSubmitting}>
               {editTarget ? 'Save Changes' : 'Create Project'}
             </Button>

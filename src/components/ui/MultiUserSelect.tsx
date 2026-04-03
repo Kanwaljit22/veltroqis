@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ChevronDown, X } from 'lucide-react';
+import { ChevronDown, Search, X } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { Checkbox } from './Checkbox';
 
@@ -8,6 +8,7 @@ export interface MultiUserSelectProps {
   error?: string;
   hint?: string;
   placeholder?: string;
+  searchPlaceholder?: string;
   /** User id → display label */
   options: { value: string; label: string }[];
   value: string[];
@@ -21,6 +22,7 @@ export const MultiUserSelect: React.FC<MultiUserSelectProps> = ({
   error,
   hint,
   placeholder = 'Unassigned',
+  searchPlaceholder = 'Search members...',
   options,
   value,
   onChange,
@@ -28,16 +30,30 @@ export const MultiUserSelect: React.FC<MultiUserSelectProps> = ({
   id,
 }) => {
   const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState('');
   const ref = useRef<HTMLDivElement>(null);
+  const searchRef = useRef<HTMLInputElement>(null);
   const inputId = id ?? label?.toLowerCase().replace(/\s+/g, '-') ?? 'multi-user-select';
 
   useEffect(() => {
     const onDoc = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+        setSearch('');
+      }
     };
     document.addEventListener('mousedown', onDoc);
     return () => document.removeEventListener('mousedown', onDoc);
   }, []);
+
+  useEffect(() => {
+    if (open) {
+      // Focus the search input when dropdown opens
+      setTimeout(() => searchRef.current?.focus(), 0);
+    } else {
+      setSearch('');
+    }
+  }, [open]);
 
   const toggle = (userId: string) => {
     if (value.includes(userId)) onChange(value.filter((x) => x !== userId));
@@ -50,6 +66,10 @@ export const MultiUserSelect: React.FC<MultiUserSelectProps> = ({
   };
 
   const labelById = Object.fromEntries(options.map((o) => [o.value, o.label]));
+
+  const filteredOptions = search.trim()
+    ? options.filter((o) => o.label.toLowerCase().includes(search.toLowerCase()))
+    : options;
 
   return (
     <div className="w-full relative" ref={ref}>
@@ -70,7 +90,7 @@ export const MultiUserSelect: React.FC<MultiUserSelectProps> = ({
             e.preventDefault();
             setOpen((o) => !o);
           }
-          if (e.key === 'Escape') setOpen(false);
+          if (e.key === 'Escape') { setOpen(false); setSearch(''); }
         }}
         className={cn(
           'w-full min-h-10 rounded-lg border bg-surface px-3 py-2 text-left text-sm transition-colors',
@@ -94,7 +114,7 @@ export const MultiUserSelect: React.FC<MultiUserSelectProps> = ({
                   <button
                     type="button"
                     onClick={(e) => removeChip(uid, e)}
-                    className="p-0.5 rounded hover:bg-slate-200 text-dim shrink-0"
+                    className="p-0.5 rounded hover:bg-slate-200 dark:hover:bg-slate-700 text-dim shrink-0"
                     aria-label={`Remove ${labelById[uid]}`}
                   >
                     <X className="h-3 w-3" />
@@ -112,27 +132,65 @@ export const MultiUserSelect: React.FC<MultiUserSelectProps> = ({
       {open && !disabled && (
         <div
           className={cn(
-            'absolute z-50 mt-1 w-[min(100%,320px)] max-h-56 overflow-y-auto rounded-xl border border-base',
-            'bg-surface py-1 shadow-lg'
+            'absolute z-50 mt-1 w-[min(100%,320px)] rounded-xl border border-base',
+            'bg-surface shadow-lg flex flex-col'
           )}
         >
-          {options.length === 0 ? (
-            <p className="px-3 py-2 text-sm text-weak">No users available</p>
-          ) : (
-            options.map((opt) => (
-              <div
-                key={opt.value}
-                className="px-3 py-2 hover:bg-inset"
+          {/* Search input */}
+          <div className="p-2 border-b border-base">
+            <div className="relative">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-weak pointer-events-none" />
+              <input
+                ref={searchRef}
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                onMouseDown={(e) => e.stopPropagation()}
+                onClick={(e) => e.stopPropagation()}
+                placeholder={searchPlaceholder}
+                className="w-full pl-8 pr-3 py-1.5 text-sm rounded-md border border-base bg-inset text-body placeholder:text-weak focus:outline-none focus:ring-1 focus:ring-hi focus:border-transparent"
+              />
+            </div>
+          </div>
+
+          {/* Options list */}
+          <div className="max-h-48 overflow-y-auto py-1">
+            {filteredOptions.length === 0 ? (
+              <p className="px-3 py-2 text-sm text-weak">
+                {options.length === 0 ? 'No users available' : 'No results found'}
+              </p>
+            ) : (
+              filteredOptions.map((opt) => (
+                <div
+                  key={opt.value}
+                  className="px-3 py-2 hover:bg-inset cursor-pointer"
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => toggle(opt.value)}
+                >
+                  <Checkbox
+                    checked={value.includes(opt.value)}
+                    onChange={() => toggle(opt.value)}
+                    label={opt.label}
+                    className="w-full pointer-events-none"
+                  />
+                </div>
+              ))
+            )}
+          </div>
+
+          {/* Footer summary */}
+          {value.length > 0 && (
+            <div className="px-3 py-2 border-t border-base flex items-center justify-between">
+              <span className="text-xs text-dim">{value.length} selected</span>
+              <button
+                type="button"
                 onMouseDown={(e) => e.preventDefault()}
+                onClick={() => onChange([])}
+                className="text-xs text-dim hover:text-hi transition-colors"
               >
-                <Checkbox
-                  checked={value.includes(opt.value)}
-                  onChange={() => toggle(opt.value)}
-                  label={opt.label}
-                  className="w-full"
-                />
-              </div>
-            ))
+                Clear all
+              </button>
+            </div>
           )}
         </div>
       )}

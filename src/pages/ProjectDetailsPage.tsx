@@ -100,10 +100,10 @@ export const ProjectDetailsPage: React.FC = () => {
           </div>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => navigate(`/tasks?project=${project.id}`)}>
+          <Button variant="outline" onClick={() => navigate('/scrumboard')}>
             View Board
           </Button>
-          <Button onClick={() => navigate('/tasks')}>
+          <Button onClick={() => navigate('/scrumboard')}>
             Add Task
           </Button>
         </div>

@@ -22,7 +22,6 @@ const InvitationsPage    = lazy(() => import('./pages/InvitationsPage').then((m)
 const ProfilePage        = lazy(() => import('./pages/ProfilePage').then((m) => ({ default: m.ProfilePage })));
 const ProjectsPage       = lazy(() => import('./pages/ProjectsPage').then((m) => ({ default: m.ProjectsPage })));
 const ProjectDetailsPage = lazy(() => import('./pages/ProjectDetailsPage').then((m) => ({ default: m.ProjectDetailsPage })));
-const TaskBoardPage      = lazy(() => import('./pages/TaskBoardPage').then((m) => ({ default: m.TaskBoardPage })));
 const TaskDetailsPage    = lazy(() => import('./pages/TaskDetailsPage').then((m) => ({ default: m.TaskDetailsPage })));
 const ScrumboardPage     = lazy(() => import('./pages/ScrumboardPage').then((m) => ({ default: m.ScrumboardPage })));
 const DailyScrumPage     = lazy(() => import('./pages/DailyScrumPage').then((m) => ({ default: m.DailyScrumPage })));
@@ -141,7 +140,7 @@ function AppContent() {
             <Route path="/profile"         element={<ProfilePage />} />
             <Route path="/projects"        element={<ProjectsPage />} />
             <Route path="/projects/:id"    element={<ProjectDetailsPage />} />
-            <Route path="/tasks"           element={<TaskBoardPage />} />
+            <Route path="/tasks"           element={<Navigate to="/scrumboard" replace />} />
             <Route path="/tasks/:id"       element={<TaskDetailsPage />} />
             <Route path="/scrumboard"      element={<ScrumboardPage />} />
             <Route path="/standup"         element={<DailyScrumPage />} />

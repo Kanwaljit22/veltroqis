@@ -96,7 +96,7 @@ export const Navbar: React.FC = () => {
     await markAsRead(n.id);
     const et = n.entity_type;
     const eid = n.entity_id;
-    if (et === 'task' && eid) navigate(`/tasks/${eid}`);
+    if (et === 'task' && eid) navigate(`/tasks/${eid}?from=scrumboard`);
     else if (et === 'project' && eid) navigate(`/projects/${eid}`);
     else if (et === 'issue' && eid) navigate('/issues');
     else if (et === 'sprint') navigate('/scrumboard');
