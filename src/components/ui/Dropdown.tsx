@@ -29,7 +29,7 @@ export const Dropdown: React.FC<DropdownProps> = ({
   items,
   align = 'right',
   className,
-}): string => {
+}) => {
   const [open, setOpen] = useState(false);
   const [coords, setCoords] = useState<PanelCoords>({ top: 0, left: 0 });
   const triggerRef = useRef<HTMLDivElement>(null);
