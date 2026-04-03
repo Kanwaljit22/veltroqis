@@ -47,6 +47,7 @@ import {
 } from '../lib/utils';
 import { TaskLabelIcon } from '../lib/taskLabelIcons';
 import { useTasks, useCreateTask, useUpdateTask } from '../hooks/useTasks';
+import { useNewItemHighlight } from '../hooks/useNewItemHighlight';
 import { useThemeStore } from '../store/themeStore';
 import { useSprints, useBurndownData, useCreateSprint, useStartSprint, useCompleteSprint } from '../hooks/useSprints';
 import { useProjects } from '../hooks/useProjects';
@@ -107,8 +108,9 @@ const ScrumTaskCardInner: React.FC<{
   onView: (t: Task) => void;
   userRole?: string;
   overlay?: boolean;
+  highlighted?: boolean;
   dragHandleProps?: React.HTMLAttributes<HTMLDivElement>;
-}> = ({ task, onView, userRole, overlay, dragHandleProps }) => {
+}> = ({ task, onView, userRole, overlay, highlighted, dragHandleProps }) => {
   const roleQuickAction = useMemo(() => {
     if (userRole === 'designer' && task.status === 'in_progress' && task.labels?.includes('design')) {
       return { label: 'Mark Dev Ready', nextStatus: 'code_review' as TaskStatus, icon: <GitPullRequest className="h-3 w-3" /> };
@@ -126,7 +128,8 @@ const ScrumTaskCardInner: React.FC<{
     <div
       className={cn(
         'bg-surface rounded-xl border border-base p-3 shadow-sm cursor-pointer group hover:shadow-md transition-all',
-        overlay && 'shadow-2xl rotate-1 scale-105 border-blue-300 cursor-grabbing'
+        overlay && 'shadow-2xl rotate-1 scale-105 border-blue-300 cursor-grabbing',
+        highlighted && 'row-highlight'
       )}
       onClick={() => !overlay && onView(task)}
     >
@@ -223,7 +226,8 @@ const SortableScrumTaskCard: React.FC<{
   task: Task;
   onView: (t: Task) => void;
   userRole?: string;
-}> = ({ task, onView, userRole }) => {
+  highlighted?: boolean;
+}> = ({ task, onView, userRole, highlighted }) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: task.id });
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -236,6 +240,7 @@ const SortableScrumTaskCard: React.FC<{
         task={task}
         onView={onView}
         userRole={userRole}
+        highlighted={highlighted}
         dragHandleProps={{ ...attributes, ...listeners }}
       />
     </div>
@@ -249,7 +254,8 @@ const ScrumboardColumnDropZone: React.FC<{
   onTaskView: (t: Task) => void;
   userRole?: string;
   onEmptyAddClick: () => void;
-}> = ({ col, colTasks, onTaskView, userRole, onEmptyAddClick }) => {
+  highlightedIds?: Set<string>;
+}> = ({ col, colTasks, onTaskView, userRole, onEmptyAddClick, highlightedIds }) => {
   const { setNodeRef, isOver } = useDroppable({ id: col.id });
   return (
     <div
@@ -261,7 +267,7 @@ const ScrumboardColumnDropZone: React.FC<{
     >
       <SortableContext items={colTasks.map((t) => t.id)} strategy={verticalListSortingStrategy}>
         {colTasks.map((task) => (
-          <SortableScrumTaskCard key={task.id} task={task} onView={onTaskView} userRole={userRole} />
+          <SortableScrumTaskCard key={task.id} task={task} onView={onTaskView} userRole={userRole} highlighted={highlightedIds?.has(task.id)} />
         ))}
       </SortableContext>
       {colTasks.length === 0 && (
@@ -810,6 +816,7 @@ export const ScrumboardPage: React.FC = () => {
   const effectiveProject = selectedProject || projects[0]?.id || '';
   const { data: allTasks = [], isLoading } = useTasks(effectiveProject || undefined);
   const { data: sprints = [] } = useSprints(effectiveProject || undefined);
+  const highlightedTaskIds = useNewItemHighlight(allTasks, !isLoading);
   const createTask = useCreateTask();
   const updateTask = useUpdateTask();
   const startSprint = useStartSprint();
@@ -1233,6 +1240,7 @@ export const ScrumboardPage: React.FC = () => {
                     onTaskView={(selectedTask) => navigate(`/tasks/${selectedTask.id}?from=scrumboard`)}
                     userRole={currentUser?.role}
                     onEmptyAddClick={() => openCreate(col.id)}
+                    highlightedIds={highlightedTaskIds}
                   />
                 </div>
               );

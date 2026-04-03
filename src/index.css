@@ -116,6 +116,18 @@ body {
 }
 .animate-fade-in { animation: fadeIn 0.2s ease-out; }
 
+/* New-item attention highlight — fades from a soft blue glow to nothing over 5 s */
+@keyframes rowGlow {
+  0%, 12% { background-color: rgb(59 130 246 / 0.10); }
+  100%    { background-color: transparent; }
+}
+@keyframes rowGlowDark {
+  0%, 12% { background-color: rgb(96 165 250 / 0.14); }
+  100%    { background-color: transparent; }
+}
+.row-highlight            { animation: rowGlow     5s ease-out forwards; }
+.dark .row-highlight      { animation: rowGlowDark 5s ease-out forwards; }
+
 /* ─── TipTap / RichTextEditor ─────────────────────────────────────────────── */
 .rich-text-editor .ProseMirror p.is-empty::before {
   content: attr(data-placeholder);

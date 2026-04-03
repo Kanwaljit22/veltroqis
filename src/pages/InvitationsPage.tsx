@@ -15,10 +15,11 @@ import { Tabs } from '../components/ui/Tabs';
 import { StatCard } from '../components/ui/Card';
 import { toast } from '../components/ui/Toast';
 import { SkeletonTable, ErrorState } from '../components/ui/Skeleton';
-import { ROLE_LABELS, ROLE_COLORS, formatDateShort } from '../lib/utils';
+import { ROLE_LABELS, ROLE_COLORS, formatDateShort, cn } from '../lib/utils';
 import {
   useInvitations, useSendInvitation, useResendInvitation, useRevokeInvitation,
 } from '../hooks/useInvitations';
+import { useNewItemHighlight } from '../hooks/useNewItemHighlight';
 import { useAuthStore } from '../store/authStore';
 import { usePermissions } from '../lib/permissions';
 import { PermissionGuard } from '../components/ui/PermissionGuard';
@@ -54,6 +55,7 @@ export const InvitationsPage: React.FC = () => {
   const { can } = usePermissions();
 
   const { data: invitations = [], isLoading, error, refetch } = useInvitations();
+  const highlightedIds = useNewItemHighlight(invitations, !isLoading);
   const sendInvitation = useSendInvitation();
   const resendInvitation = useResendInvitation();
   const revokeInvitation = useRevokeInvitation();
@@ -156,7 +158,7 @@ export const InvitationsPage: React.FC = () => {
                   const statusConfig = STATUS_CONFIG[inv.status];
                   const StatusIcon = statusConfig.icon;
                   return (
-                    <tr key={inv.id} className="hover:bg-inset/50 transition-colors">
+                    <tr key={inv.id} className={cn('hover:bg-inset/50 transition-colors', highlightedIds.has(inv.id) && 'row-highlight')}>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2">
                           <Mail className="h-4 w-4 text-weak" />

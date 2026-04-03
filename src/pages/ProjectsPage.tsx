@@ -17,8 +17,9 @@ import { ProgressBar } from '../components/ui/Progress';
 import { AvatarGroup } from '../components/ui/Avatar';
 import { SkeletonCard, ErrorState } from '../components/ui/Skeleton';
 import { MultiUserSelect } from '../components/ui/MultiUserSelect';
-import { PROJECT_STATUS_LABELS, PROJECT_STATUS_COLORS, formatDate } from '../lib/utils';
+import { PROJECT_STATUS_LABELS, PROJECT_STATUS_COLORS, formatDate, cn } from '../lib/utils';
 import { useProjects, useCreateProject, useUpdateProject, useDeleteProject } from '../hooks/useProjects';
+import { useNewItemHighlight } from '../hooks/useNewItemHighlight';
 import { useUsers } from '../hooks/useUsers';
 import { useAuthStore } from '../store/authStore';
 import { usePermissions, canViewAllProjects } from '../lib/permissions';
@@ -52,6 +53,7 @@ export const ProjectsPage: React.FC = () => {
   const isAdmin = canViewAllProjects(currentUser?.role);
 
   const { data: projects = [], isLoading, error, refetch } = useProjects();
+  const highlightedIds = useNewItemHighlight(projects, !isLoading);
   const { data: users = [] } = useUsers();
   const createProject = useCreateProject();
   const updateProject = useUpdateProject();
@@ -212,7 +214,7 @@ export const ProjectsPage: React.FC = () => {
             return (
               <div
                 key={project.id}
-                className="bg-surface rounded-xl border border-base shadow-sm p-5 hover:shadow-md transition-shadow"
+                className={cn('bg-surface rounded-xl border border-base shadow-sm p-5 hover:shadow-md transition-shadow', highlightedIds.has(project.id) && 'row-highlight')}
               >
                 <div className="flex items-start justify-between gap-2 mb-3">
                   <div className="flex items-center gap-3">
