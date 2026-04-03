@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-  CheckCircle2, FolderKanban, AlertOctagon, Zap,
+  CheckCircle2, FolderKanban, AlertOctagon, AlertTriangle,
   CalendarDays, Clock,
 } from 'lucide-react';
 import {
@@ -103,7 +103,7 @@ export const DashboardPage: React.FC = () => {
     : 0;
 
   const deliveryChange = s ? formatStatChange(deliveryRate, prevDeliveryRate) : null;
-  const outputChange   = s ? formatStatChange(s.month_completions ?? 0, s.prev_month_completions ?? 0) : null;
+
   // ── Project health board (top 6 active, sorted by completion asc = most at-risk first) ─
   const healthProjects = (projects.data ?? [])
     .filter((p) => p.status === 'active')
@@ -116,6 +116,27 @@ export const DashboardPage: React.FC = () => {
     })
     .sort((a, b) => a.pct - b.pct)
     .slice(0, 6);
+
+  // ── At-Risk Projects KPI ──────────────────────────────────────────────────
+  // An active project is "at-risk" when it has a deadline and either:
+  //   (a) is already overdue (daysLeft < 0), or
+  //   (b) deadline is within 30 days but completion is below 70 %
+  const overdueCount      = healthProjects.filter((p) => p.daysLeft !== null && p.daysLeft < 0).length;
+  const expiringSoonCount = healthProjects.filter(
+    (p) => p.daysLeft !== null && p.daysLeft >= 0 && p.daysLeft <= 30 && p.pct < 70
+  ).length;
+  const atRiskCount = overdueCount + expiringSoonCount;
+
+  const atRiskSubText = (() => {
+    if (atRiskCount === 0) return 'All active projects on track';
+    const parts: string[] = [];
+    if (overdueCount > 0) parts.push(`${overdueCount} overdue`);
+    if (expiringSoonCount > 0) parts.push(`${expiringSoonCount} expiring soon`);
+    return parts.join(' · ');
+  })();
+
+  // ── On-hold projects (for Active Projects KPI sub-text) ──────────────────
+  const onHoldCount = (projects.data ?? []).filter((p) => p.status === 'on_hold').length;
 
   // ── Portfolio donut total ─────────────────────────────────────────────────
   const portfolioTotal = (portfolio.data ?? []).reduce((acc, d) => acc + d.count, 0);
@@ -148,40 +169,56 @@ export const DashboardPage: React.FC = () => {
 
       {/* ── KPI Cards ──────────────────────────────────────────────────────── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-        {stats.isLoading ? (
+        {(stats.isLoading || projects.isLoading) ? (
           Array.from({ length: 4 }).map((_, i) => <SkeletonStatCard key={i} />)
         ) : (
           <>
+            {/* Delivery Rate — overall task throughput with raw-count context */}
             <StatCard
               title="Delivery Rate"
               value={`${deliveryRate}%`}
-              change={deliveryChange?.text}
-              changeType={deliveryChange?.type}
+              change={
+                s && s.total_tasks > 0
+                  ? `${s.completed_tasks} of ${s.total_tasks} tasks done`
+                  : deliveryChange?.text
+              }
+              changeType={deliveryChange?.type ?? 'neutral'}
               icon={<CheckCircle2 className="h-5 w-5 text-cyan-500" />}
               iconBg="bg-cyan-50 dark:bg-cyan-950/40"
             />
+            {/* Active Projects — flags stalled (on-hold) projects immediately */}
             <StatCard
               title="Active Projects"
               value={s?.active_projects ?? 0}
-              change={`${s?.total_projects ?? 0} total in portfolio`}
-              changeType="neutral"
+              change={
+                onHoldCount > 0
+                  ? `${onHoldCount} on hold — review needed`
+                  : `${s?.total_projects ?? 0} total · portfolio fully active`
+              }
+              changeType={onHoldCount > 0 ? 'negative' : 'positive'}
               icon={<FolderKanban className="h-5 w-5 text-violet-500" />}
               iconBg="bg-violet-50 dark:bg-violet-950/40"
             />
+            {/* Critical Issues — unresolved blockers surface quality risk */}
             <StatCard
               title="Critical Issues"
               value={s?.critical_issues ?? 0}
-              change={s?.critical_issues === 0 ? 'No blockers — system healthy' : `${s?.open_issues ?? 0} total open issues`}
+              change={
+                s?.critical_issues === 0
+                  ? 'No blockers — quality healthy'
+                  : `${s?.open_issues ?? 0} total open · ${s?.critical_issues} need urgent action`
+              }
               changeType={s?.critical_issues === 0 ? 'positive' : 'negative'}
               icon={<AlertOctagon className="h-5 w-5 text-rose-500" />}
               iconBg="bg-rose-50 dark:bg-rose-950/40"
             />
+            {/* At-Risk Projects — derived from deadline + completion; most actionable */}
             <StatCard
-              title="Monthly Output"
-              value={s?.month_completions ?? 0}
-              change={outputChange?.text}
-              changeType={outputChange?.type}
-              icon={<Zap className="h-5 w-5 text-amber-500" />}
+              title="At-Risk Projects"
+              value={atRiskCount}
+              change={atRiskSubText}
+              changeType={atRiskCount === 0 ? 'positive' : 'negative'}
+              icon={<AlertTriangle className="h-5 w-5 text-amber-500" />}
               iconBg="bg-amber-50 dark:bg-amber-950/40"
             />
           </>
@@ -281,10 +318,14 @@ export const DashboardPage: React.FC = () => {
                 />
                 <Tooltip
                   contentStyle={tooltipStyle}
-                  formatter={(value: number, name: string) => [
-                    `${value} project${value !== 1 ? 's' : ''}`,
-                    PROJECT_STATUS_LABELS[name as keyof typeof PROJECT_STATUS_LABELS] ?? name,
-                  ]}
+                  formatter={(value, name) => {
+                    const n = String(name ?? '');
+                    const v = Number(value ?? 0);
+                    return [
+                      `${v} project${v !== 1 ? 's' : ''}`,
+                      PROJECT_STATUS_LABELS[n as keyof typeof PROJECT_STATUS_LABELS] ?? n,
+                    ];
+                  }}
                 />
               </PieChart>
             </ResponsiveContainer>
