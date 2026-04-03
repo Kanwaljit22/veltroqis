@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import {
-  Bug, Plus, Search, MessageSquare, MoreHorizontal, Eye, Edit2, Trash2, Filter,
-  ChevronDown,
+  Plus, Search, MessageSquare, MoreHorizontal, Eye, Edit2, Trash2, Filter,
+  ChevronDown, CheckCircle2, Clock, XCircle,
 } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { Input, Textarea } from '../components/ui/Input';
@@ -35,6 +35,17 @@ const schema = z.object({
   steps_to_reproduce: z.string().optional(),
 });
 type FormData = z.infer<typeof schema>;
+
+const editSchema = z.object({
+  title: z.string().min(2, 'Title required'),
+  description: z.string().optional(),
+  type: z.string().min(1, 'Type required'),
+  severity: z.string().min(1, 'Severity required'),
+  status: z.string().min(1, 'Status required'),
+  assignee_id: z.string().optional(),
+  steps_to_reproduce: z.string().optional(),
+});
+type EditFormData = z.infer<typeof editSchema>;
 
 const TYPE_OPTIONS = [
   { value: 'bug', label: 'Bug' },
@@ -70,11 +81,33 @@ export const IssueTrackerPage: React.FC = () => {
   const [statusTab, setStatusTab] = useState('all');
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [viewIssue, setViewIssue] = useState<Issue | null>(null);
+  const [editIssue, setEditIssue] = useState<Issue | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Issue | null>(null);
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
   });
+
+  const {
+    register: editRegister,
+    handleSubmit: editHandleSubmit,
+    reset: editReset,
+    formState: { errors: editErrors },
+  } = useForm<EditFormData>({ resolver: zodResolver(editSchema) });
+
+  useEffect(() => {
+    if (editIssue) {
+      editReset({
+        title: editIssue.title,
+        description: editIssue.description ?? '',
+        type: editIssue.type,
+        severity: editIssue.severity,
+        status: editIssue.status,
+        assignee_id: editIssue.assignee_id ?? '',
+        steps_to_reproduce: editIssue.steps_to_reproduce ?? '',
+      });
+    }
+  }, [editIssue, editReset]);
 
   const filtered = issues.filter((issue) => {
     const matchSearch =
@@ -107,6 +140,23 @@ export const IssueTrackerPage: React.FC = () => {
     });
     setCreateModalOpen(false);
     reset();
+  };
+
+  const onEditSubmit = async (data: EditFormData) => {
+    if (!editIssue) return;
+    await updateIssue.mutateAsync({
+      id: editIssue.id,
+      updates: {
+        title: data.title,
+        description: data.description || undefined,
+        type: data.type as IssueType,
+        severity: data.severity as IssueSeverity,
+        status: data.status as IssueStatus,
+        assignee_id: data.assignee_id || undefined,
+        steps_to_reproduce: data.steps_to_reproduce || undefined,
+      },
+    });
+    setEditIssue(null);
   };
 
   const handleStatusChange = async (issue: Issue, status: IssueStatus) => {
@@ -224,6 +274,7 @@ export const IssueTrackerPage: React.FC = () => {
                   <th className="px-4 py-2.5 text-[11px] font-semibold text-weak uppercase tracking-wider">Severity</th>
                   <th className="px-4 py-2.5 text-[11px] font-semibold text-weak uppercase tracking-wider">Status</th>
                   <th className="px-4 py-2.5 text-[11px] font-semibold text-weak uppercase tracking-wider">Reporter</th>
+                  <th className="px-4 py-2.5 text-[11px] font-semibold text-weak uppercase tracking-wider">Assignee</th>
                   <th className="px-4 py-2.5 text-[11px] font-semibold text-weak uppercase tracking-wider">Created</th>
                   <th className="px-4 py-2.5 text-[11px] font-semibold text-weak uppercase tracking-wider text-right">Actions</th>
                 </tr>
@@ -259,6 +310,16 @@ export const IssueTrackerPage: React.FC = () => {
                         </div>
                       )}
                     </td>
+                    <td className="px-4 py-3">
+                      {issue.assignee ? (
+                        <div className="flex items-center gap-2">
+                          <Avatar src={issue.assignee.avatar_url} name={issue.assignee.full_name} size="xs" />
+                          <span className="text-xs text-dim truncate max-w-[100px]">{issue.assignee.full_name}</span>
+                        </div>
+                      ) : (
+                        <span className="text-xs text-weak">—</span>
+                      )}
+                    </td>
                     <td className="px-4 py-3 text-xs text-weak whitespace-nowrap">{formatTimeAgo(issue.created_at)}</td>
                     <td className="px-4 py-3 text-right">
                       <Dropdown
@@ -269,10 +330,11 @@ export const IssueTrackerPage: React.FC = () => {
                         }
                         items={[
                           { label: 'View Details', icon: <Eye className="h-3.5 w-3.5" />, onClick: () => setViewIssue(issue) },
+                          { label: 'Edit Issue', icon: <Edit2 className="h-3.5 w-3.5" />, onClick: () => setEditIssue(issue) },
                           { separator: true },
-                          { label: 'Mark In Progress', icon: <Edit2 className="h-3.5 w-3.5" />, onClick: () => handleStatusChange(issue, 'in_progress') },
-                          { label: 'Mark Resolved', icon: <Edit2 className="h-3.5 w-3.5" />, onClick: () => handleStatusChange(issue, 'resolved') },
-                          { label: 'Close Issue', icon: <Edit2 className="h-3.5 w-3.5" />, onClick: () => handleStatusChange(issue, 'closed') },
+                          { label: 'Mark In Progress', icon: <Clock className="h-3.5 w-3.5" />, onClick: () => handleStatusChange(issue, 'in_progress') },
+                          { label: 'Mark Resolved', icon: <CheckCircle2 className="h-3.5 w-3.5" />, onClick: () => handleStatusChange(issue, 'resolved') },
+                          { label: 'Close Issue', icon: <XCircle className="h-3.5 w-3.5" />, onClick: () => handleStatusChange(issue, 'closed') },
                           { separator: true },
                           { label: 'Delete Issue', icon: <Trash2 className="h-3.5 w-3.5" />, onClick: () => setDeleteTarget(issue), danger: true },
                         ]}
@@ -282,7 +344,7 @@ export const IssueTrackerPage: React.FC = () => {
                 ))}
                 {filtered.length === 0 && (
                   <tr>
-                    <td colSpan={7} className="px-6 py-10 text-center">
+                    <td colSpan={8} className="px-6 py-10 text-center">
                       <div className="flex flex-col items-center gap-2">
                         <div className="w-10 h-10 rounded-full bg-inset flex items-center justify-center">
                           <Filter className="h-5 w-5 text-weak" />
@@ -333,6 +395,17 @@ export const IssueTrackerPage: React.FC = () => {
                   </div>
                 </div>
               )}
+              <div>
+                <p className="text-xs text-weak mb-1">Assignee</p>
+                {viewIssue.assignee ? (
+                  <div className="flex items-center gap-2">
+                    <Avatar src={viewIssue.assignee.avatar_url} name={viewIssue.assignee.full_name} size="xs" />
+                    <span className="text-sm text-body">{viewIssue.assignee.full_name}</span>
+                  </div>
+                ) : (
+                  <span className="text-sm text-weak">Unassigned</span>
+                )}
+              </div>
             </div>
             {viewIssue.steps_to_reproduce && (
               <div>
@@ -376,6 +449,74 @@ export const IssueTrackerPage: React.FC = () => {
           <ModalFooter>
             <Button variant="outline" type="button" onClick={() => { setCreateModalOpen(false); reset(); }}>Cancel</Button>
             <Button type="submit" loading={createIssue.isPending}>Create Issue</Button>
+          </ModalFooter>
+        </form>
+      </Modal>
+
+      {/* Edit Issue Modal */}
+      <Modal
+        open={!!editIssue}
+        onClose={() => setEditIssue(null)}
+        title="Edit Issue"
+        description="Update the issue details below"
+        size="lg"
+      >
+        <form onSubmit={editHandleSubmit(onEditSubmit)} className="space-y-4">
+          <Input
+            label="Title"
+            placeholder="Brief description of the issue"
+            error={editErrors.title?.message}
+            {...editRegister('title')}
+          />
+          <Textarea
+            label="Description"
+            placeholder="Detailed description..."
+            rows={3}
+            {...editRegister('description')}
+          />
+          <div className="grid grid-cols-2 gap-4">
+            <Select
+              label="Type"
+              options={TYPE_OPTIONS}
+              placeholder="Select type"
+              error={editErrors.type?.message}
+              {...editRegister('type')}
+            />
+            <Select
+              label="Severity"
+              options={SEVERITY_OPTIONS}
+              placeholder="Select severity"
+              error={editErrors.severity?.message}
+              {...editRegister('severity')}
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <Select
+              label="Status"
+              options={STATUS_OPTIONS}
+              placeholder="Select status"
+              error={editErrors.status?.message}
+              {...editRegister('status')}
+            />
+            <Select
+              label="Assignee"
+              options={userOptions}
+              {...editRegister('assignee_id')}
+            />
+          </div>
+          <Textarea
+            label="Steps to Reproduce"
+            placeholder="1. Go to...&#10;2. Click on...&#10;3. See error"
+            rows={3}
+            {...editRegister('steps_to_reproduce')}
+          />
+          <ModalFooter>
+            <Button variant="outline" type="button" onClick={() => setEditIssue(null)}>
+              Cancel
+            </Button>
+            <Button type="submit" loading={updateIssue.isPending}>
+              Save Changes
+            </Button>
           </ModalFooter>
         </form>
       </Modal>

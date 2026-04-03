@@ -65,14 +65,14 @@ function projectHealthColor(completion: number, daysLeft: number | null): string
   if (daysLeft !== null && daysLeft < 0) return 'text-red-500';
   if (completion >= 75) return 'text-emerald-500';
   if (completion >= 40) return 'text-amber-500';
-  return 'text-red-500';
+  return 'text-orange-500';
 }
 
 function projectHealthBarColor(completion: number, daysLeft: number | null): string {
   if (daysLeft !== null && daysLeft < 0) return 'bg-red-500';
   if (completion >= 75) return 'bg-emerald-500';
   if (completion >= 40) return 'bg-amber-400';
-  return 'bg-red-400';
+  return 'bg-orange-400';
 }
 
 // ─── Shared activity row (used in both the card preview and the modal) ────────
