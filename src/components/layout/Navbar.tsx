@@ -181,7 +181,7 @@ export const Navbar: React.FC = () => {
                 {notifications.length === 0 ? (
                   <div className="py-8 text-center text-sm text-slate-400">No notifications</div>
                 ) : (
-                  (notifications as NotifRow[]).map((n) => (
+                  (notifications as unknown as NotifRow[]).map((n) => (
                     <div
                       key={n.id}
                       role="button"
