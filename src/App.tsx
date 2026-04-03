@@ -140,7 +140,6 @@ function AppContent() {
             <Route path="/profile"         element={<ProfilePage />} />
             <Route path="/projects"        element={<ProjectsPage />} />
             <Route path="/projects/:id"    element={<ProjectDetailsPage />} />
-            <Route path="/tasks"           element={<Navigate to="/scrumboard" replace />} />
             <Route path="/tasks/:id"       element={<TaskDetailsPage />} />
             <Route path="/scrumboard"      element={<ScrumboardPage />} />
             <Route path="/standup"         element={<DailyScrumPage />} />

@@ -283,7 +283,12 @@ export const IssueTrackerPage: React.FC = () => {
                 {filtered.map((issue) => (
                   <tr key={issue.id} className="hover:bg-inset/50 transition-colors group">
                     <td className="px-4 py-3 max-w-xs">
-                      <p className="text-sm font-medium text-hi truncate leading-snug">{issue.title}</p>
+                      <button
+                        onClick={() => setViewIssue(issue)}
+                        className="text-sm font-medium text-hi truncate leading-snug text-left w-full hover:text-blue-600 transition-colors cursor-pointer"
+                      >
+                        {issue.title}
+                      </button>
                       {issue.description && (
                         <p className="text-xs text-weak truncate mt-0.5 leading-snug">{issue.description}</p>
                       )}
