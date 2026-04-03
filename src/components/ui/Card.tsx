@@ -20,7 +20,7 @@ export const Card: React.FC<CardProps> = ({
   return (
     <div
       className={cn(
-        'bg-white rounded-xl border border-slate-200 shadow-sm',
+        'bg-surface rounded-xl border border-base shadow-sm',
         hover && 'transition-shadow hover:shadow-md cursor-pointer',
         pads[padding],
         className
@@ -52,15 +52,15 @@ export const StatCard: React.FC<StatCardProps> = ({
   const changeColors = {
     positive: 'text-green-600',
     negative: 'text-red-500',
-    neutral: 'text-slate-500',
+    neutral: 'text-dim',
   };
 
   return (
     <Card>
       <div className="flex items-start justify-between">
         <div>
-          <p className="text-sm text-slate-500 font-medium">{title}</p>
-          <p className="mt-2 text-3xl font-bold text-slate-900 tabular-nums">
+          <p className="text-sm text-dim font-medium">{title}</p>
+          <p className="mt-2 text-3xl font-bold text-hi tabular-nums">
             {typeof value === 'number' ? value.toLocaleString() : value}
           </p>
           {change && (

@@ -61,7 +61,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
       Image.configure({
         allowBase64: false,
         HTMLAttributes: {
-          class: 'max-w-full h-auto rounded-md border border-slate-200 my-2',
+          class: 'max-w-full h-auto rounded-md border border-base my-2',
         },
       }),
     ],
@@ -73,7 +73,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
     editorProps: {
       attributes: {
         class: cn(
-          'min-h-[120px] max-h-64 overflow-y-auto px-3 py-2.5 text-sm text-slate-900 outline-none',
+          'min-h-[120px] max-h-64 overflow-y-auto px-3 py-2.5 text-sm text-hi outline-none',
         ),
       },
     },
@@ -131,9 +131,9 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
     return (
       <div className="w-full">
         {label && (
-          <span className="block text-sm font-medium text-slate-700 mb-1.5">{label}</span>
+          <span className="block text-sm font-medium text-body mb-1.5">{label}</span>
         )}
-        <div className="min-h-[120px] rounded-lg border border-slate-200 bg-slate-50 animate-pulse" />
+        <div className="min-h-[120px] rounded-lg border border-base bg-inset animate-pulse" />
       </div>
     );
   }
@@ -141,26 +141,26 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
   const barBtn = (active: boolean) =>
     cn(
       'p-1.5 rounded-md transition-colors',
-      active ? 'bg-slate-200 text-slate-900' : 'text-slate-600 hover:bg-slate-100',
+      active ? 'bg-slate-200 text-hi' : 'text-dim hover:bg-inset',
       disabled && 'opacity-50 pointer-events-none'
     );
 
   return (
     <div className="w-full rich-text-editor">
       {label && (
-        <label htmlFor={inputId} className="block text-sm font-medium text-slate-700 mb-1.5">
+        <label htmlFor={inputId} className="block text-sm font-medium text-body mb-1.5">
           {label}
         </label>
       )}
       <div
         className={cn(
-          'rounded-lg border bg-white transition-colors',
-          error ? 'border-red-400 ring-2 ring-red-100' : 'border-slate-200 hover:border-slate-300',
+          'rounded-lg border bg-surface transition-colors',
+          error ? 'border-red-400 ring-2 ring-red-100' : 'border-base hover:border-base',
           'focus-within:ring-2 focus-within:ring-slate-900 focus-within:border-transparent'
         )}
       >
         <div
-          className="flex flex-wrap items-center gap-0.5 px-2 py-1.5 border-b border-slate-100 bg-slate-50/80 rounded-t-lg"
+          className="flex flex-wrap items-center gap-0.5 px-2 py-1.5 border-b border-subtle bg-inset/80 rounded-t-lg"
           role="toolbar"
           aria-label="Text formatting"
         >
@@ -246,7 +246,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
         onChange={onFileChange}
       />
       {error && <p className="mt-1.5 text-xs text-red-600">{error}</p>}
-      {hint && !error && <p className="mt-1.5 text-xs text-slate-500">{hint}</p>}
+      {hint && !error && <p className="mt-1.5 text-xs text-dim">{hint}</p>}
     </div>
   );
 };

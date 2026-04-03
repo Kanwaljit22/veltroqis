@@ -20,7 +20,7 @@ interface RawUser    { role: string; status: string; created_at: string }
 interface RawInvite  { status: string; sent_at: string }
 interface RawProject { status: string }
 interface RawTask    { status: string; created_at: string; updated_at: string }
-interface RawIssue   { status: string; created_at: string; updated_at: string }
+interface RawIssue   { status: string; severity: string; created_at: string; updated_at: string }
 
 interface DashboardRawData {
   readonly users:    RawUser[];
@@ -42,7 +42,7 @@ async function fetchDashboardBase(): Promise<DashboardRawData> {
     supabase.from('invitations').select('status, sent_at'),
     supabase.from('projects').select('status'),
     supabase.from('tasks').select('status, created_at, updated_at'),
-    supabase.from('issues').select('status, created_at, updated_at'),
+    supabase.from('issues').select('status, severity, created_at, updated_at'),
   ]);
 
   // Surface the first real error; schema errors return empty arrays gracefully.
@@ -74,9 +74,21 @@ export function useDashboardStats() {
   return useQuery({
     ...DASHBOARD_BASE_OPTS,
     select: (raw): DashboardStats => {
-      const prevMonthStart = startOfMonth(subMonths(new Date(), 1)).toISOString();
-      const prevMonthEnd   = endOfMonth(subMonths(new Date(), 1)).toISOString();
+      const now            = new Date();
+      const prevMonthStart = startOfMonth(subMonths(now, 1)).toISOString();
+      const prevMonthEnd   = endOfMonth(subMonths(now, 1)).toISOString();
+      const curMonthStart  = startOfMonth(now).toISOString();
       const { users, invites, projects, tasks, issues } = raw;
+
+      const monthCompletions = tasks.filter(
+        (t) => t.status === 'done' && t.updated_at >= curMonthStart
+      ).length;
+
+      const prevMonthCompletions = tasks.filter(
+        (t) => t.status === 'done' &&
+               t.updated_at >= prevMonthStart &&
+               t.updated_at <= prevMonthEnd
+      ).length;
 
       return {
         total_users:     users.length,
@@ -88,6 +100,12 @@ export function useDashboardStats() {
         total_tasks:     tasks.length,
         completed_tasks: tasks.filter((t) => t.status === 'done').length,
         open_issues:     issues.filter((i) => i.status === 'open').length,
+        critical_issues: issues.filter(
+          (i) => ['open', 'in_progress'].includes(i.status) &&
+                 ['critical', 'blocker'].includes(i.severity)
+        ).length,
+        month_completions:      monthCompletions,
+        prev_month_completions: prevMonthCompletions,
         prev_total_users:     users.filter((u) => u.created_at <= prevMonthEnd).length,
         prev_active_users:    users.filter((u) => u.status === 'active' && u.created_at <= prevMonthEnd).length,
         prev_admin_users:     users.filter((u) => u.role === 'admin' && u.created_at <= prevMonthEnd).length,
@@ -199,6 +217,58 @@ export function useBugTrendData() {
         week:   `W${i + 1}`,
         open:   openMap[i],
         closed: closedMap[i],
+      }));
+    },
+  });
+}
+
+// ─── Project Status Breakdown ─────────────────────────────────────────────────
+
+export function useProjectStatusBreakdown() {
+  return useQuery({
+    ...DASHBOARD_BASE_OPTS,
+    select: (raw) => {
+      const statuses = ['active', 'on_hold', 'completed', 'archived'] as const;
+      const counts: Record<string, number> = {};
+      raw.projects.forEach(({ status }) => {
+        counts[status] = (counts[status] ?? 0) + 1;
+      });
+      return statuses
+        .map((s) => ({ status: s, count: counts[s] ?? 0 }))
+        .filter((s) => s.count > 0);
+    },
+  });
+}
+
+// ─── Issue Severity Trend (last 6 weeks) ──────────────────────────────────────
+
+export function useIssueSeverityTrend() {
+  return useQuery({
+    ...DASHBOARD_BASE_OPTS,
+    select: (raw) => {
+      const now         = new Date();
+      const weeks       = Array.from({ length: 6 }, (_, i) => subWeeks(now, 5 - i));
+      type SevKey = 'minor' | 'major' | 'critical' | 'blocker';
+
+      const buckets: Record<number, Record<SevKey, number>> = {};
+      weeks.forEach((_, idx) => {
+        buckets[idx] = { minor: 0, major: 0, critical: 0, blocker: 0 };
+      });
+
+      raw.issues.forEach((issue) => {
+        const isActive = ['open', 'in_progress'].includes(issue.status);
+        if (!isActive) return;
+        const d = new Date(issue.created_at);
+        const idx = weeks.findIndex((w) => d >= startOfWeek(w) && d <= endOfWeek(w));
+        if (idx !== -1) {
+          const sev = issue.severity as SevKey;
+          if (sev in buckets[idx]) buckets[idx][sev]++;
+        }
+      });
+
+      return weeks.map((_, i) => ({
+        week: `W${i + 1}`,
+        ...buckets[i],
       }));
     },
   });

@@ -85,13 +85,13 @@ export const ProfilePage: React.FC = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-slate-900">Profile</h1>
-        <p className="text-sm text-slate-500 mt-0.5">Manage your account settings and preferences</p>
+        <h1 className="text-2xl font-bold text-hi">Profile</h1>
+        <p className="text-sm text-dim mt-0.5">Manage your account settings and preferences</p>
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
         {/* Left Card */}
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 flex flex-col items-center">
+        <div className="bg-surface rounded-xl border border-base shadow-sm p-6 flex flex-col items-center">
           <div className="relative group mb-4">
             <Avatar src={user?.avatar_url} name={user?.full_name || ''} size="xl" className="h-24 w-24 text-2xl" />
             <button
@@ -108,40 +108,40 @@ export const ProfilePage: React.FC = () => {
               onChange={handleAvatarChange}
             />
           </div>
-          <h2 className="text-lg font-bold text-slate-900">{user?.full_name}</h2>
-          <p className="text-sm text-slate-500 mt-0.5">{user?.designation || 'Member'}</p>
+          <h2 className="text-lg font-bold text-hi">{user?.full_name}</h2>
+          <p className="text-sm text-dim mt-0.5">{user?.designation || 'Member'}</p>
           {user?.role && (
             <Badge className={`mt-2 ${ROLE_COLORS[user.role]}`}>
               {ROLE_LABELS[user.role]}
             </Badge>
           )}
 
-          <div className="w-full mt-6 space-y-3 border-t border-slate-100 pt-4">
-            <div className="flex items-center gap-2.5 text-sm text-slate-600">
-              <Mail className="h-4 w-4 text-slate-400 flex-shrink-0" />
+          <div className="w-full mt-6 space-y-3 border-t border-subtle pt-4">
+            <div className="flex items-center gap-2.5 text-sm text-dim">
+              <Mail className="h-4 w-4 text-weak flex-shrink-0" />
               <span className="truncate">{user?.email}</span>
             </div>
             {user?.phone && (
-              <div className="flex items-center gap-2.5 text-sm text-slate-600">
-                <Phone className="h-4 w-4 text-slate-400 flex-shrink-0" />
+              <div className="flex items-center gap-2.5 text-sm text-dim">
+                <Phone className="h-4 w-4 text-weak flex-shrink-0" />
                 <span>{user.phone}</span>
               </div>
             )}
             {user?.location && (
-              <div className="flex items-center gap-2.5 text-sm text-slate-600">
-                <MapPin className="h-4 w-4 text-slate-400 flex-shrink-0" />
+              <div className="flex items-center gap-2.5 text-sm text-dim">
+                <MapPin className="h-4 w-4 text-weak flex-shrink-0" />
                 <span>{user.location}</span>
               </div>
             )}
             {user?.department && (
-              <div className="flex items-center gap-2.5 text-sm text-slate-600">
-                <Briefcase className="h-4 w-4 text-slate-400 flex-shrink-0" />
+              <div className="flex items-center gap-2.5 text-sm text-dim">
+                <Briefcase className="h-4 w-4 text-weak flex-shrink-0" />
                 <span>{user.department}</span>
               </div>
             )}
             {user?.joined_at && (
-              <div className="flex items-center gap-2.5 text-sm text-slate-600">
-                <Calendar className="h-4 w-4 text-slate-400 flex-shrink-0" />
+              <div className="flex items-center gap-2.5 text-sm text-dim">
+                <Calendar className="h-4 w-4 text-weak flex-shrink-0" />
                 <span>Joined {formatDate(user.joined_at)}</span>
               </div>
             )}
@@ -149,9 +149,9 @@ export const ProfilePage: React.FC = () => {
         </div>
 
         {/* Right Card */}
-        <div className="xl:col-span-2 bg-white rounded-xl border border-slate-200 shadow-sm p-6">
-          <h3 className="font-semibold text-slate-900 mb-1">Profile Information</h3>
-          <p className="text-xs text-slate-500 mb-4">Update your personal information and bio</p>
+        <div className="xl:col-span-2 bg-surface rounded-xl border border-base shadow-sm p-6">
+          <h3 className="font-semibold text-hi mb-1">Profile Information</h3>
+          <p className="text-xs text-dim mb-4">Update your personal information and bio</p>
 
           <Tabs
             tabs={[
@@ -211,7 +211,7 @@ export const ProfilePage: React.FC = () => {
                 placeholder="Enter current password"
                 leftIcon={<Lock className="h-4 w-4" />}
                 rightIcon={
-                  <button type="button" onClick={() => setShowCurrentPwd((s) => !s)} className="text-slate-400 hover:text-slate-600">
+                  <button type="button" onClick={() => setShowCurrentPwd((s) => !s)} className="text-weak hover:text-dim">
                     {showCurrentPwd ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 }
@@ -223,7 +223,7 @@ export const ProfilePage: React.FC = () => {
                 placeholder="Enter new password"
                 leftIcon={<Lock className="h-4 w-4" />}
                 rightIcon={
-                  <button type="button" onClick={() => setShowNewPwd((s) => !s)} className="text-slate-400 hover:text-slate-600">
+                  <button type="button" onClick={() => setShowNewPwd((s) => !s)} className="text-weak hover:text-dim">
                     {showNewPwd ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 }

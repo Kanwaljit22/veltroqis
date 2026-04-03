@@ -203,11 +203,17 @@ export interface DashboardStats {
   total_tasks: number;
   completed_tasks: number;
   open_issues: number;
+  /** Open issues with severity=critical or severity=blocker */
+  critical_issues: number;
+  /** Tasks marked done in the current calendar month */
+  month_completions: number;
   /** Previous-month snapshots used to compute MoM change percentages */
   prev_total_users: number;
   prev_active_users: number;
   prev_pending_invites: number;
   prev_admin_users: number;
+  /** Previous-month task completions for MoM velocity change */
+  prev_month_completions: number;
 }
 
 export interface RoleDistribution {

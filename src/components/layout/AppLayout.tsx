@@ -11,14 +11,12 @@ export const AppLayout: React.FC = () => {
   const { isAuthenticated, loading } = useAuthStore();
   const { sidebarOpen } = useAppStore();
 
-  // Show spinner only on first load when we're checking the session
-  // AND user isn't already known to be authenticated (from persisted state)
   if (loading && !isAuthenticated) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+      <div className="min-h-screen flex items-center justify-center bg-page">
         <div className="flex flex-col items-center gap-3">
           <div className="h-10 w-10 rounded-xl bg-linear-to-br from-cyan-400 to-blue-500 animate-pulse" />
-          <p className="text-sm text-slate-500">Loading Veltroqis...</p>
+          <p className="text-sm text-dim">Loading Veltroqis...</p>
         </div>
       </div>
     );
@@ -30,7 +28,7 @@ export const AppLayout: React.FC = () => {
 
   return (
     <Tooltip.Provider delayDuration={300} skipDelayDuration={200}>
-      <div className="min-h-screen bg-slate-50">
+      <div className="min-h-screen bg-page">
         <Sidebar />
         <Navbar />
         <main

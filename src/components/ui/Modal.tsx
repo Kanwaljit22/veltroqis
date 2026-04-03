@@ -57,24 +57,24 @@ export const Modal: React.FC<ModalProps> = ({
       />
       <div
         className={cn(
-          'relative w-full bg-white rounded-xl shadow-2xl animate-fade-in',
+          'relative w-full bg-surface rounded-xl shadow-2xl animate-fade-in',
           sizes[size],
           className
         )}
       >
         {(title || description) && (
-          <div className="flex items-start justify-between p-6 border-b border-slate-100">
+          <div className="flex items-start justify-between p-6 border-b border-subtle">
             <div>
               {title && (
-                <h2 className="text-lg font-semibold text-slate-900">{title}</h2>
+                <h2 className="text-lg font-semibold text-hi">{title}</h2>
               )}
               {description && (
-                <p className="mt-0.5 text-sm text-slate-500">{description}</p>
+                <p className="mt-0.5 text-sm text-dim">{description}</p>
               )}
             </div>
             <button
               onClick={onClose}
-              className="ml-4 p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
+              className="ml-4 p-1 rounded-lg text-weak hover:text-dim hover:bg-inset transition-colors"
             >
               <X className="h-5 w-5" />
             </button>
@@ -90,7 +90,7 @@ export const ModalFooter: React.FC<{ children: React.ReactNode; className?: stri
   children,
   className,
 }) => (
-  <div className={cn('flex items-center justify-end gap-3 pt-4 border-t border-slate-100 mt-4', className)}>
+  <div className={cn('flex items-center justify-end gap-3 pt-4 border-t border-subtle mt-4', className)}>
     {children}
   </div>
 );

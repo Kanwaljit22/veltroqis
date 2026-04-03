@@ -42,13 +42,13 @@ export const Dropdown: React.FC<DropdownProps> = ({
       {open && (
         <div
           className={cn(
-            'absolute z-50 mt-1 min-w-[160px] rounded-xl border border-slate-200 bg-white py-1 shadow-lg animate-fade-in',
+            'absolute z-50 mt-1 min-w-[160px] rounded-xl border border-base bg-surface py-1 shadow-lg animate-fade-in',
             align === 'right' ? 'right-0' : 'left-0'
           )}
         >
           {items.map((item, i) => {
             if ('separator' in item && item.separator) {
-              return <div key={i} className="my-1 border-t border-slate-100" />;
+              return <div key={i} className="my-1 border-t border-subtle" />;
             }
             const { label, icon, onClick, danger, disabled } = item as DropdownItem;
             return (
@@ -58,7 +58,7 @@ export const Dropdown: React.FC<DropdownProps> = ({
                   'flex w-full items-center gap-2.5 px-3.5 py-2 text-sm transition-colors',
                   danger
                     ? 'text-red-600 hover:bg-red-50'
-                    : 'text-slate-700 hover:bg-slate-50',
+                    : 'text-body hover:bg-inset',
                   disabled && 'opacity-50 cursor-not-allowed'
                 )}
                 disabled={disabled}

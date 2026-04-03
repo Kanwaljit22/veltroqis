@@ -47,7 +47,7 @@ import { PermissionGuard } from '../components/ui/PermissionGuard';
 import type { Task, TaskStatus, TaskPriority } from '../types';
 
 const COLUMNS: { id: TaskStatus; label: string; color: string; bg: string }[] = [
-  { id: 'todo', label: 'To Do', color: 'text-slate-600', bg: 'bg-slate-100' },
+  { id: 'todo', label: 'To Do', color: 'text-dim', bg: 'bg-inset' },
   { id: 'in_progress', label: 'In Progress', color: 'text-blue-600', bg: 'bg-blue-50' },
   { id: 'review', label: 'Review', color: 'text-yellow-600', bg: 'bg-yellow-50' },
   { id: 'done', label: 'Done', color: 'text-green-600', bg: 'bg-green-50' },
@@ -87,14 +87,14 @@ const TaskCardBody: React.FC<{
 }> = ({ task, dragHandleProps, overlay }) => (
   <div
     className={cn(
-      'bg-white rounded-xl border border-slate-200 p-3.5 shadow-sm cursor-pointer group hover:shadow-md transition-all',
+      'bg-surface rounded-xl border border-base p-3.5 shadow-sm cursor-pointer group hover:shadow-md transition-all',
       overlay && 'shadow-2xl rotate-2 scale-105 cursor-grabbing'
     )}
   >
     <div className="flex items-start gap-2">
       <div
         {...dragHandleProps}
-        className="mt-0.5 p-0.5 rounded text-slate-300 hover:text-slate-500 cursor-grab active:cursor-grabbing shrink-0"
+        className="mt-0.5 p-0.5 rounded text-weak hover:text-dim cursor-grab active:cursor-grabbing shrink-0"
         onClick={(e) => e.stopPropagation()}
       >
         <GripVertical className="h-3.5 w-3.5" />
@@ -108,7 +108,7 @@ const TaskCardBody: React.FC<{
         </div>
         <p
           className={cn(
-            'text-sm font-medium text-slate-800 leading-snug line-clamp-2',
+            'text-sm font-medium text-hi leading-snug line-clamp-2',
             task.description?.trim() ? 'mb-1.5' : 'mb-3'
           )}
         >
@@ -118,11 +118,11 @@ const TaskCardBody: React.FC<{
           <EllipsisTooltip
             text={task.description.trim()}
             disabled={!!overlay}
-            className="text-xs text-slate-500 leading-relaxed line-clamp-2 mb-3 wrap-break-word"
+            className="text-xs text-dim leading-relaxed line-clamp-2 mb-3 wrap-break-word"
           />
         ) : null}
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 text-slate-400">
+          <div className="flex items-center gap-2 text-weak">
             {!!task.comment_count && (
               <span className="flex items-center gap-0.5 text-xs">
                 <MessageSquare className="h-3 w-3" />{task.comment_count}
@@ -169,7 +169,7 @@ const KanbanColumn: React.FC<{
     <div className="flex flex-col gap-2">
       <div className={cn('flex items-center gap-2 px-3 py-2 rounded-xl', col.bg)}>
         <span className={cn('text-sm font-semibold', col.color)}>{col.label}</span>
-        <span className={cn('text-xs font-medium px-1.5 py-0.5 rounded-full bg-white/60', col.color)}>
+        <span className={cn('text-xs font-medium px-1.5 py-0.5 rounded-full bg-surface/60', col.color)}>
           {colTasks.length}
         </span>
       </div>
@@ -187,8 +187,8 @@ const KanbanColumn: React.FC<{
           ))}
         </SortableContext>
         {colTasks.length === 0 && (
-          <div className="h-24 rounded-xl border-2 border-dashed border-slate-200 flex items-center justify-center pointer-events-none">
-            <p className="text-xs text-slate-400">Drop tasks here</p>
+          <div className="h-24 rounded-xl border-2 border-dashed border-base flex items-center justify-center pointer-events-none">
+            <p className="text-xs text-weak">Drop tasks here</p>
           </div>
         )}
       </div>
@@ -317,8 +317,8 @@ export const TaskBoardPage: React.FC = () => {
     <div className="space-y-5 h-full">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Task Board</h1>
-          <p className="text-sm text-slate-500 mt-0.5">Drag and drop tasks across columns</p>
+          <h1 className="text-2xl font-bold text-hi">Task Board</h1>
+          <p className="text-sm text-dim mt-0.5">Drag and drop tasks across columns</p>
         </div>
         <PermissionGuard permission="assign_tasks">
           <Button icon={<Plus className="h-4 w-4" />} onClick={() => openCreate('todo')}>

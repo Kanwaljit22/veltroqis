@@ -31,7 +31,7 @@ type FormData = z.infer<typeof schema>;
 
 const STATUS_STYLES: Record<UserStatus, string> = {
   active: 'bg-green-100 text-green-700',
-  inactive: 'bg-slate-100 text-slate-600',
+  inactive: 'bg-inset text-dim',
   pending: 'bg-yellow-100 text-yellow-700',
 };
 
@@ -118,8 +118,8 @@ export const UserManagementPage: React.FC = () => {
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">User Management</h1>
-          <p className="text-sm text-slate-500 mt-0.5">Manage users, roles, and permissions</p>
+          <h1 className="text-2xl font-bold text-hi">User Management</h1>
+          <p className="text-sm text-dim mt-0.5">Manage users, roles, and permissions</p>
         </div>
         <PermissionGuard permission="manage_users">
           <Button icon={<UserPlus className="h-4 w-4" />} onClick={openAdd}>
@@ -129,7 +129,7 @@ export const UserManagementPage: React.FC = () => {
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 flex flex-col sm:flex-row gap-3">
+      <div className="bg-surface rounded-xl border border-base shadow-sm p-4 flex flex-col sm:flex-row gap-3">
         <div className="flex-1">
           <Input
             placeholder="Search users..."
@@ -148,10 +148,10 @@ export const UserManagementPage: React.FC = () => {
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="px-6 py-4 border-b border-slate-100">
-          <h3 className="font-semibold text-slate-900">All Users ({filtered.length})</h3>
-          <p className="text-xs text-slate-500 mt-0.5">A list of all users in your organization</p>
+      <div className="bg-surface rounded-xl border border-base shadow-sm overflow-hidden">
+        <div className="px-6 py-4 border-b border-subtle">
+          <h3 className="font-semibold text-hi">All Users ({filtered.length})</h3>
+          <p className="text-xs text-dim mt-0.5">A list of all users in your organization</p>
         </div>
         <div className="overflow-x-auto">
           {isLoading ? (
@@ -161,23 +161,23 @@ export const UserManagementPage: React.FC = () => {
           ) : (
             <table className="w-full">
               <thead>
-                <tr className="text-left border-b border-slate-100">
-                  <th className="px-6 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider">User</th>
-                  <th className="px-6 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider">Role</th>
-                  <th className="px-6 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider">Status</th>
-                  <th className="px-6 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider">Joined</th>
-                  <th className="px-6 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider text-right">Actions</th>
+                <tr className="text-left border-b border-subtle">
+                  <th className="px-6 py-3 text-xs font-medium text-dim uppercase tracking-wider">User</th>
+                  <th className="px-6 py-3 text-xs font-medium text-dim uppercase tracking-wider">Role</th>
+                  <th className="px-6 py-3 text-xs font-medium text-dim uppercase tracking-wider">Status</th>
+                  <th className="px-6 py-3 text-xs font-medium text-dim uppercase tracking-wider">Joined</th>
+                  <th className="px-6 py-3 text-xs font-medium text-dim uppercase tracking-wider text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-50">
+              <tbody className="divide-y divide-subtle">
                 {filtered.map((user) => (
-                  <tr key={user.id} className="hover:bg-slate-50/50 transition-colors">
+                  <tr key={user.id} className="hover:bg-inset/50 transition-colors">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <Avatar src={user.avatar_url} name={user.full_name} size="md" />
                         <div>
-                          <p className="text-sm font-medium text-slate-900">{user.full_name}</p>
-                          <p className="text-xs text-slate-500">{user.email}</p>
+                          <p className="text-sm font-medium text-hi">{user.full_name}</p>
+                          <p className="text-xs text-dim">{user.email}</p>
                         </div>
                       </div>
                     </td>
@@ -189,11 +189,11 @@ export const UserManagementPage: React.FC = () => {
                         {user.status.charAt(0).toUpperCase() + user.status.slice(1)}
                       </Badge>
                     </td>
-                    <td className="px-6 py-4 text-sm text-slate-500">{formatDate(user.joined_at)}</td>
+                    <td className="px-6 py-4 text-sm text-dim">{formatDate(user.joined_at)}</td>
                     <td className="px-6 py-4 text-right">
                       <Dropdown
                         trigger={
-                          <button className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors">
+                          <button className="p-1.5 rounded-lg text-weak hover:text-dim hover:bg-inset transition-colors">
                             <MoreHorizontal className="h-4 w-4" />
                           </button>
                         }
@@ -218,7 +218,7 @@ export const UserManagementPage: React.FC = () => {
                 ))}
                 {filtered.length === 0 && (
                   <tr>
-                    <td colSpan={5} className="px-6 py-12 text-center text-sm text-slate-400">
+                    <td colSpan={5} className="px-6 py-12 text-center text-sm text-weak">
                       <Filter className="h-8 w-8 mx-auto mb-2 opacity-40" />
                       No users found
                     </td>

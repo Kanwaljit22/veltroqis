@@ -45,7 +45,9 @@ import {
   LABEL_LABELS, LABEL_COLORS, STATUS_LABELS, STATUS_COLORS,
   formatDate, formatTimeAgo, cn,
 } from '../lib/utils';
+import { TaskLabelIcon } from '../lib/taskLabelIcons';
 import { useTasks, useCreateTask, useUpdateTask } from '../hooks/useTasks';
+import { useThemeStore } from '../store/themeStore';
 import { useSprints, useBurndownData, useCreateSprint, useStartSprint, useCompleteSprint } from '../hooks/useSprints';
 import { useProjects } from '../hooks/useProjects';
 import { useUsers } from '../hooks/useUsers';
@@ -67,22 +69,15 @@ const SCRUM_COLUMNS: {
   icon: React.ReactNode;
   description: string;
 }[] = [
-  { id: 'backlog',     label: 'Backlog',      color: 'text-slate-600', bg: 'bg-slate-100',  border: 'border-slate-300', icon: <Layers className="h-3.5 w-3.5" />,       description: 'All pending items' },
-  { id: 'todo',        label: 'To Do',        color: 'text-indigo-600', bg: 'bg-indigo-50', border: 'border-indigo-300', icon: <Flag className="h-3.5 w-3.5" />,          description: 'Ready to start' },
-  { id: 'in_progress', label: 'In Progress',  color: 'text-blue-600',  bg: 'bg-blue-50',   border: 'border-blue-300',  icon: <Play className="h-3.5 w-3.5" />,           description: 'Currently active' },
-  { id: 'code_review', label: 'Code Review',  color: 'text-purple-600', bg: 'bg-purple-50', border: 'border-purple-300', icon: <GitPullRequest className="h-3.5 w-3.5" />, description: 'Awaiting review' },
-  { id: 'testing',     label: 'Testing / QA', color: 'text-orange-600', bg: 'bg-orange-50', border: 'border-orange-300', icon: <TestTube className="h-3.5 w-3.5" />,       description: 'QA in progress' },
-  { id: 'done',        label: 'Done',         color: 'text-green-600', bg: 'bg-green-50',   border: 'border-green-300', icon: <CheckCircle2 className="h-3.5 w-3.5" />,   description: 'Completed' },
+  { id: 'backlog',     label: 'Backlog',      color: 'text-dim dark:text-weak',  bg: 'bg-inset dark:bg-slate-800/60',   border: 'border-slate-300 dark:border-slate-600',  icon: <Layers className="h-3.5 w-3.5" />,       description: 'All pending items' },
+  { id: 'todo',        label: 'To Do',        color: 'text-indigo-600 dark:text-indigo-400', bg: 'bg-indigo-50 dark:bg-indigo-950/50',  border: 'border-indigo-300 dark:border-indigo-700', icon: <Flag className="h-3.5 w-3.5" />,          description: 'Ready to start' },
+  { id: 'in_progress', label: 'In Progress',  color: 'text-blue-600 dark:text-blue-400',    bg: 'bg-blue-50 dark:bg-blue-950/50',      border: 'border-blue-300 dark:border-blue-700',    icon: <Play className="h-3.5 w-3.5" />,           description: 'Currently active' },
+  { id: 'code_review', label: 'Code Review',  color: 'text-purple-600 dark:text-purple-400',bg: 'bg-purple-50 dark:bg-purple-950/50',  border: 'border-purple-300 dark:border-purple-700',icon: <GitPullRequest className="h-3.5 w-3.5" />, description: 'Awaiting review' },
+  { id: 'testing',     label: 'Testing / QA', color: 'text-orange-600 dark:text-orange-400',bg: 'bg-orange-50 dark:bg-orange-950/50',  border: 'border-orange-300 dark:border-orange-700',icon: <TestTube className="h-3.5 w-3.5" />,       description: 'QA in progress' },
+  { id: 'done',        label: 'Done',         color: 'text-green-600 dark:text-green-400',  bg: 'bg-green-50 dark:bg-green-950/50',    border: 'border-green-300 dark:border-green-700',  icon: <CheckCircle2 className="h-3.5 w-3.5" />,   description: 'Completed' },
 ];
 
-const LABEL_OPTIONS: { value: TaskLabel; label: string }[] = [
-  { value: 'bug', label: '🐞 Bug' },
-  { value: 'feature', label: '🚀 Feature' },
-  { value: 'enhancement', label: '⚙️ Enhancement' },
-  { value: 'design', label: '🎨 Design' },
-  { value: 'documentation', label: '📄 Documentation' },
-  { value: 'hotfix', label: '🔥 Hotfix' },
-];
+const ALL_TASK_LABELS = Object.keys(LABEL_LABELS) as TaskLabel[];
 
 const PRIORITY_OPTIONS = [
   { value: 'low', label: 'Low' },
@@ -92,7 +87,7 @@ const PRIORITY_OPTIONS = [
 ];
 
 const SPRINT_STATUS_CONFIG = {
-  planning: { label: 'Planning', color: 'bg-slate-100 text-slate-600' },
+  planning: { label: 'Planning', color: 'bg-inset text-dim' },
   active:   { label: 'Active',   color: 'bg-green-100 text-green-700' },
   completed:{ label: 'Completed', color: 'bg-blue-100 text-blue-700' },
 };
@@ -130,7 +125,7 @@ const ScrumTaskCardInner: React.FC<{
   return (
     <div
       className={cn(
-        'bg-white rounded-xl border border-slate-200 p-3 shadow-sm cursor-pointer group hover:shadow-md hover:border-slate-300 transition-all',
+        'bg-surface rounded-xl border border-base p-3 shadow-sm cursor-pointer group hover:shadow-md transition-all',
         overlay && 'shadow-2xl rotate-1 scale-105 border-blue-300 cursor-grabbing'
       )}
       onClick={() => !overlay && onView(task)}
@@ -141,8 +136,12 @@ const ScrumTaskCardInner: React.FC<{
           {task.labels.slice(0, 3).map((label) => (
             <span
               key={label}
-              className={cn('text-[9px] font-semibold px-1.5 py-0.5 rounded border', LABEL_COLORS[label])}
+              className={cn(
+                'inline-flex items-center gap-0.5 text-[9px] font-semibold px-1.5 py-0.5 rounded border',
+                LABEL_COLORS[label]
+              )}
             >
+              <TaskLabelIcon label={label} className="h-2.5 w-2.5" strokeWidth={2.5} />
               {LABEL_LABELS[label]}
             </span>
           ))}
@@ -152,7 +151,7 @@ const ScrumTaskCardInner: React.FC<{
       <div className="flex items-start gap-2">
         <div
           {...(dragHandleProps ?? {})}
-          className="mt-0.5 p-0.5 rounded text-slate-300 hover:text-slate-500 cursor-grab active:cursor-grabbing shrink-0"
+          className="mt-0.5 p-0.5 rounded text-weak hover:text-dim cursor-grab active:cursor-grabbing shrink-0"
           onClick={(e) => e.stopPropagation()}
         >
           <GripVertical className="h-3.5 w-3.5" />
@@ -164,14 +163,14 @@ const ScrumTaskCardInner: React.FC<{
               {PRIORITY_LABELS[task.priority]}
             </Badge>
             {task.story_points !== undefined && (
-              <span className="ml-auto text-[10px] font-bold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded-full">
+              <span className="ml-auto text-[10px] font-bold text-dim bg-inset px-1.5 py-0.5 rounded-full">
                 {task.story_points} SP
               </span>
             )}
           </div>
           <p
             className={cn(
-              'text-sm font-medium text-slate-800 leading-snug line-clamp-2',
+              'text-sm font-medium text-hi leading-snug line-clamp-2',
               task.description?.trim() ? 'mb-1' : 'mb-2.5'
             )}
           >
@@ -181,11 +180,11 @@ const ScrumTaskCardInner: React.FC<{
             <EllipsisTooltip
               text={task.description.trim()}
               disabled={!!overlay}
-              className="text-xs text-slate-500 leading-relaxed line-clamp-2 mb-2.5 wrap-break-word"
+              className="text-xs text-dim leading-relaxed line-clamp-2 mb-2.5 wrap-break-word"
             />
           ) : null}
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-slate-400">
+            <div className="flex items-center gap-2 text-weak">
               {!!task.comment_count && (
                 <span className="flex items-center gap-0.5 text-xs">
                   <MessageSquare className="h-3 w-3" />{task.comment_count}
@@ -207,7 +206,7 @@ const ScrumTaskCardInner: React.FC<{
       {/* Role-based quick action */}
       {roleQuickAction && !overlay && (
         <button
-          className="mt-2 w-full flex items-center justify-center gap-1 text-[10px] font-semibold py-1 rounded-lg bg-slate-50 hover:bg-blue-50 text-slate-500 hover:text-blue-600 border border-dashed border-slate-200 hover:border-blue-300 transition-all opacity-0 group-hover:opacity-100"
+          className="mt-2 w-full flex items-center justify-center gap-1 text-[10px] font-semibold py-1 rounded-lg bg-inset hover:bg-blue-50 dark:hover:bg-blue-950/40 text-dim hover:text-blue-600 border border-dashed border-base hover:border-blue-300 transition-all opacity-0 group-hover:opacity-100"
           onClick={(e) => { e.stopPropagation(); }}
           title={roleQuickAction.label}
         >
@@ -268,11 +267,11 @@ const ScrumboardColumnDropZone: React.FC<{
       {colTasks.length === 0 && (
         <button
           type="button"
-          className="flex-1 min-h-[80px] rounded-xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center gap-1 cursor-pointer hover:border-slate-300 hover:bg-slate-50 transition-colors"
+          className="flex-1 min-h-[80px] rounded-xl border-2 border-dashed border-base flex flex-col items-center justify-center gap-1 cursor-pointer hover:border-base hover:bg-hover transition-colors"
           onClick={onEmptyAddClick}
         >
-          <Plus className="h-4 w-4 text-slate-300" />
-          <p className="text-[10px] text-slate-300 font-medium">{col.description}</p>
+          <Plus className="h-4 w-4 text-weak" />
+          <p className="text-[10px] text-weak font-medium">{col.description}</p>
         </button>
       )}
     </div>
@@ -283,25 +282,32 @@ const ScrumboardColumnDropZone: React.FC<{
 
 const BurndownPanel: React.FC<{ sprintId?: string }> = ({ sprintId }) => {
   const { data: burndown = [] } = useBurndownData(sprintId);
+  const { colorMode } = useThemeStore();
+  const isDark = colorMode === 'dark';
+  const grid    = isDark ? '#1e293b' : '#f1f5f9';
+  const tick    = isDark ? '#64748b' : '#94a3b8';
+  const tipBg   = isDark ? '#0f172a' : '#ffffff';
+  const tipBdr  = isDark ? '#1e293b' : '#e2e8f0';
+  const tipClr  = isDark ? '#f1f5f9' : '#0f172a';
   return (
-    <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
+    <div className="bg-surface rounded-xl border border-base shadow-sm p-4">
       <div className="flex items-center gap-2 mb-4">
         <TrendingDown className="h-4 w-4 text-blue-500" />
-        <h3 className="font-semibold text-slate-800 text-sm">Sprint Burndown</h3>
-        <span className="text-xs text-slate-400 ml-auto">Story Points Remaining</span>
+        <h3 className="font-semibold text-hi text-sm">Sprint Burndown</h3>
+        <span className="text-xs text-weak ml-auto">Story Points Remaining</span>
       </div>
       <ResponsiveContainer width="100%" height={180}>
         <LineChart data={burndown} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-          <XAxis dataKey="day" tick={{ fontSize: 10, fill: '#94a3b8' }} interval={1} />
-          <YAxis tick={{ fontSize: 10, fill: '#94a3b8' }} />
+          <CartesianGrid strokeDasharray="3 3" stroke={grid} />
+          <XAxis dataKey="day" tick={{ fontSize: 10, fill: tick }} interval={1} />
+          <YAxis tick={{ fontSize: 10, fill: tick }} />
           <Tooltip
-            contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #e2e8f0' }}
+            contentStyle={{ fontSize: 12, borderRadius: 8, border: `1px solid ${tipBdr}`, background: tipBg, color: tipClr }}
             labelStyle={{ fontWeight: 600 }}
           />
-          <Legend wrapperStyle={{ fontSize: 11 }} />
-          <Line type="monotone" dataKey="ideal" name="Ideal" stroke="#94a3b8" strokeDasharray="5 5" strokeWidth={2} dot={false} />
-          <Line type="monotone" dataKey="actual" name="Actual" stroke="#3b82f6" strokeWidth={2} dot={{ r: 3, fill: '#3b82f6' }} connectNulls={false} />
+          <Legend wrapperStyle={{ fontSize: 11, color: tick }} />
+          <Line type="monotone" dataKey="ideal"  name="Ideal"  stroke={tick}      strokeDasharray="5 5" strokeWidth={2} dot={false} />
+          <Line type="monotone" dataKey="actual" name="Actual" stroke="#3b82f6"   strokeWidth={2}       dot={{ r: 3, fill: '#3b82f6' }} connectNulls={false} />
         </LineChart>
       </ResponsiveContainer>
     </div>
@@ -349,19 +355,26 @@ const TaskDetailModal: React.FC<{
           <div className="flex-1">
             <div className="flex flex-wrap items-center gap-1.5 mb-2">
               {task.labels?.map((l) => (
-                <span key={l} className={cn('text-[10px] font-semibold px-1.5 py-0.5 rounded border', LABEL_COLORS[l])}>
+                <span
+                  key={l}
+                  className={cn(
+                    'inline-flex items-center gap-0.5 text-[10px] font-semibold px-1.5 py-0.5 rounded border',
+                    LABEL_COLORS[l]
+                  )}
+                >
+                  <TaskLabelIcon label={l} className="h-2.5 w-2.5" strokeWidth={2.5} />
                   {LABEL_LABELS[l]}
                 </span>
               ))}
               <Badge className={PRIORITY_COLORS[task.priority]} size="sm">{PRIORITY_LABELS[task.priority]}</Badge>
               <Badge className={STATUS_COLORS[task.status]} size="sm">{STATUS_LABELS[task.status]}</Badge>
               {task.story_points !== undefined && (
-                <span className="text-[10px] font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full flex items-center gap-0.5">
+                <span className="text-[10px] font-bold text-dim bg-inset px-2 py-0.5 rounded-full flex items-center gap-0.5">
                   <Zap className="h-2.5 w-2.5" /> {task.story_points} SP
                 </span>
               )}
             </div>
-            <h2 className="text-lg font-bold text-slate-900 leading-tight">{task.title}</h2>
+            <h2 className="text-lg font-bold text-hi leading-tight">{task.title}</h2>
           </div>
         </div>
 
@@ -381,17 +394,17 @@ const TaskDetailModal: React.FC<{
             <div className="space-y-4">
               {task.description && (
                 <div>
-                  <p className="text-xs font-medium text-slate-400 mb-1">Description</p>
-                  <p className="text-sm text-slate-700 leading-relaxed bg-slate-50 rounded-lg p-3">{task.description}</p>
+                  <p className="text-xs font-medium text-weak mb-1">Description</p>
+                  <p className="text-sm text-body leading-relaxed bg-inset rounded-lg p-3">{task.description}</p>
                 </div>
               )}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-xs font-medium text-slate-400 mb-1.5">Status</p>
+                  <p className="text-xs font-medium text-weak mb-1.5">Status</p>
                   <select
                     value={task.status}
                     onChange={(e) => onStatusChange(task, e.target.value as TaskStatus)}
-                    className="w-full text-sm border border-slate-200 rounded-lg px-2.5 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full text-sm border border-base rounded-lg px-2.5 py-1.5 bg-surface text-hi focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     {statusOptions.map((o) => (
                       <option key={o.value} value={o.value}>{o.label}</option>
@@ -399,24 +412,24 @@ const TaskDetailModal: React.FC<{
                   </select>
                 </div>
                 <div>
-                  <p className="text-xs font-medium text-slate-400 mb-1.5">Priority</p>
+                  <p className="text-xs font-medium text-weak mb-1.5">Priority</p>
                   <Badge className={cn(PRIORITY_COLORS[task.priority], 'text-sm py-1 px-2.5')}>
                     {PRIORITY_LABELS[task.priority]}
                   </Badge>
                 </div>
                 {task.due_date && (
                   <div>
-                    <p className="text-xs font-medium text-slate-400 mb-1.5">Due Date</p>
-                    <div className="flex items-center gap-1.5 text-sm text-slate-700">
-                      <Calendar className="h-3.5 w-3.5 text-slate-400" />
+                    <p className="text-xs font-medium text-weak mb-1.5">Due Date</p>
+                    <div className="flex items-center gap-1.5 text-sm text-body">
+                      <Calendar className="h-3.5 w-3.5 text-weak" />
                       {formatDate(task.due_date)}
                     </div>
                   </div>
                 )}
                 {task.story_points !== undefined && (
                   <div>
-                    <p className="text-xs font-medium text-slate-400 mb-1.5">Story Points</p>
-                    <div className="flex items-center gap-1.5 text-sm font-semibold text-slate-700">
+                    <p className="text-xs font-medium text-weak mb-1.5">Story Points</p>
+                    <div className="flex items-center gap-1.5 text-sm font-semibold text-body">
                       <Zap className="h-3.5 w-3.5 text-amber-500" />
                       {task.story_points} points
                     </div>
@@ -425,13 +438,13 @@ const TaskDetailModal: React.FC<{
               </div>
               {task.assignees && task.assignees.length > 0 && (
                 <div>
-                  <p className="text-xs font-medium text-slate-400 mb-2">Assignees</p>
+                  <p className="text-xs font-medium text-weak mb-2">Assignees</p>
                   <div className="flex flex-wrap gap-2">
                     {task.assignees.map((u) => (
-                      <div key={u.id} className="flex items-center gap-2 bg-slate-50 rounded-full pl-1 pr-3 py-1">
+                      <div key={u.id} className="flex items-center gap-2 bg-inset rounded-full pl-1 pr-3 py-1">
                         <Avatar src={u.avatar_url} name={u.full_name} size="xs" />
-                        <span className="text-xs font-medium text-slate-700">{u.full_name}</span>
-                        <span className="text-[10px] text-slate-400 capitalize">{u.role.replace('_', ' ')}</span>
+                        <span className="text-xs font-medium text-body">{u.full_name}</span>
+                        <span className="text-[10px] text-weak capitalize">{u.role.replace('_', ' ')}</span>
                       </div>
                     ))}
                   </div>
@@ -439,18 +452,18 @@ const TaskDetailModal: React.FC<{
               )}
               {task.reporter && (
                 <div>
-                  <p className="text-xs font-medium text-slate-400 mb-1.5">Reporter</p>
+                  <p className="text-xs font-medium text-weak mb-1.5">Reporter</p>
                   <div className="flex items-center gap-2">
                     <Avatar src={task.reporter.avatar_url} name={task.reporter.full_name} size="xs" />
-                    <span className="text-sm text-slate-700">{task.reporter.full_name}</span>
+                    <span className="text-sm text-body">{task.reporter.full_name}</span>
                   </div>
                 </div>
               )}
               {sprint && (
                 <div>
-                  <p className="text-xs font-medium text-slate-400 mb-1.5">Sprint</p>
-                  <div className="flex items-center gap-1.5 text-sm text-slate-700">
-                    <Target className="h-3.5 w-3.5 text-slate-400" />
+                  <p className="text-xs font-medium text-weak mb-1.5">Sprint</p>
+                  <div className="flex items-center gap-1.5 text-sm text-body">
+                    <Target className="h-3.5 w-3.5 text-weak" />
                     {sprint.name}
                     <Badge className={SPRINT_STATUS_CONFIG[sprint.status].color} size="sm">
                       {SPRINT_STATUS_CONFIG[sprint.status].label}
@@ -465,7 +478,7 @@ const TaskDetailModal: React.FC<{
           <div className="space-y-3">
             <div className="space-y-3 max-h-64 overflow-y-auto mb-4">
               {taskComments.length === 0 ? (
-                <div className="text-center py-5 text-slate-400">
+                <div className="text-center py-5 text-weak">
                   <MessageSquare className="h-8 w-8 mx-auto mb-2 opacity-30" />
                   <p className="text-sm">No comments yet. Start the conversation!</p>
                 </div>
@@ -473,25 +486,25 @@ const TaskDetailModal: React.FC<{
                 taskComments.map((c) => (
                   <div key={c.id} className={cn('flex gap-2.5', c.parent_id && 'ml-8')}>
                     <Avatar src={c.author?.avatar_url} name={c.author?.full_name ?? ''} size="sm" />
-                    <div className="flex-1 bg-slate-50 rounded-xl p-3">
+                    <div className="flex-1 bg-inset rounded-xl p-3">
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="text-xs font-semibold text-slate-800">{c.author?.full_name}</span>
-                        <span className="text-[10px] text-slate-400">{formatTimeAgo(c.created_at)}</span>
+                        <span className="text-xs font-semibold text-hi">{c.author?.full_name}</span>
+                        <span className="text-[10px] text-weak">{formatTimeAgo(c.created_at)}</span>
                       </div>
-                      <p className="text-sm text-slate-700 leading-relaxed">{c.content}</p>
+                      <p className="text-sm text-body leading-relaxed">{c.content}</p>
                     </div>
                   </div>
                 ))
               )}
             </div>
-            <div className="flex gap-2 pt-3 border-t border-slate-100">
+            <div className="flex gap-2 pt-3 border-t border-subtle">
               {currentUser && <Avatar src={currentUser.avatar_url} name={currentUser.full_name} size="sm" />}
               <div className="flex-1 flex gap-2">
                 <input
                   value={newComment}
                   onChange={(e) => setNewComment(e.target.value)}
                   placeholder="Write a comment..."
-                  className="flex-1 text-sm border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="flex-1 text-sm border border-base rounded-lg px-3 py-2 bg-surface text-hi placeholder:text-weak focus:outline-none focus:ring-2 focus:ring-blue-500"
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' && !e.shiftKey) {
                       e.preventDefault();
@@ -514,7 +527,7 @@ const TaskDetailModal: React.FC<{
         {activeTab === 'activity' && (
             <div className="space-y-3 max-h-72 overflow-y-auto">
               {taskActivity.length === 0 ? (
-                <div className="text-center py-5 text-slate-400">
+                <div className="text-center py-5 text-weak">
                   <Activity className="h-8 w-8 mx-auto mb-2 opacity-30" />
                   <p className="text-sm">No activity recorded yet.</p>
                 </div>
@@ -523,32 +536,31 @@ const TaskDetailModal: React.FC<{
                   <div key={log.id} className="flex gap-2.5 text-sm">
                     <Avatar src={log.user?.avatar_url} name={log.user?.full_name ?? ''} size="xs" />
                     <div>
-                      <span className="font-medium text-slate-700">{log.user?.full_name}</span>
-                      <span className="text-slate-500"> {log.action}</span>
-                      <p className="text-[10px] text-slate-400 mt-0.5">{formatTimeAgo(log.created_at)}</p>
+                      <span className="font-medium text-body">{log.user?.full_name}</span>
+                      <span className="text-dim"> {log.action}</span>
+                      <p className="text-[10px] text-weak mt-0.5">{formatTimeAgo(log.created_at)}</p>
                     </div>
                   </div>
                 ))
               )}
-              {/* Always show some sample activity */}
               <div className="flex gap-2.5 text-sm">
-                <div className="h-6 w-6 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
+                <div className="h-6 w-6 rounded-full bg-blue-100 dark:bg-blue-950/50 flex items-center justify-center shrink-0">
                   <ArrowRight className="h-3 w-3 text-blue-600" />
                 </div>
                 <div>
-                  <span className="text-slate-500">Status changed to </span>
-                  <span className="font-medium text-slate-700">{STATUS_LABELS[task.status]}</span>
-                  <p className="text-[10px] text-slate-400 mt-0.5">Today</p>
+                  <span className="text-dim">Status changed to </span>
+                  <span className="font-medium text-body">{STATUS_LABELS[task.status]}</span>
+                  <p className="text-[10px] text-weak mt-0.5">Today</p>
                 </div>
               </div>
               <div className="flex gap-2.5 text-sm">
-                <div className="h-6 w-6 rounded-full bg-green-100 flex items-center justify-center shrink-0">
+                <div className="h-6 w-6 rounded-full bg-green-100 dark:bg-green-950/50 flex items-center justify-center shrink-0">
                   <Plus className="h-3 w-3 text-green-600" />
                 </div>
                 <div>
-                  <span className="text-slate-500">Task created by </span>
-                  <span className="font-medium text-slate-700">{task.reporter?.full_name ?? 'Unknown'}</span>
-                  <p className="text-[10px] text-slate-400 mt-0.5">{formatDate(task.created_at)}</p>
+                  <span className="text-dim">Task created by </span>
+                  <span className="font-medium text-body">{task.reporter?.full_name ?? 'Unknown'}</span>
+                  <p className="text-[10px] text-weak mt-0.5">{formatDate(task.created_at)}</p>
                 </div>
               </div>
             </div>
@@ -714,21 +726,22 @@ const CreateTaskModal: React.FC<{
 
         {/* Labels */}
         <div>
-          <p className="text-xs font-medium text-slate-700 mb-2">Labels</p>
+          <p className="text-xs font-medium text-body mb-2">Labels</p>
           <div className="flex flex-wrap gap-1.5">
-            {LABEL_OPTIONS.map((l) => (
+            {ALL_TASK_LABELS.map((taskLabel) => (
               <button
-                key={l.value}
+                key={taskLabel}
                 type="button"
-                onClick={() => toggleLabel(l.value)}
+                onClick={() => toggleLabel(taskLabel)}
                 className={cn(
-                  'text-xs font-medium px-2.5 py-1 rounded-full border transition-all',
-                  selectedLabels.includes(l.value)
-                    ? cn(LABEL_COLORS[l.value], 'ring-2 ring-offset-1 ring-current')
-                    : 'bg-slate-50 text-slate-500 border-slate-200 hover:bg-slate-100'
+                  'inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full border transition-all',
+                  selectedLabels.includes(taskLabel)
+                    ? cn(LABEL_COLORS[taskLabel], 'ring-2 ring-offset-1 ring-current')
+                    : 'bg-inset text-dim border-base hover:bg-hover'
                 )}
               >
-                {l.label}
+                <TaskLabelIcon label={taskLabel} className="h-3.5 w-3.5" strokeWidth={2} />
+                {LABEL_LABELS[taskLabel]}
               </button>
             ))}
           </div>
@@ -897,7 +910,7 @@ export const ScrumboardPage: React.FC = () => {
   const userOptions    = [{ value: '', label: 'Unassigned' }, ...users.map((u) => ({ value: u.id, label: u.full_name }))];
   const sprintOptions  = sprints.map((s) => ({ value: s.id, label: s.name }));
   const priorityFilterOptions = [{ value: '', label: 'All Priorities' }, ...PRIORITY_OPTIONS.map((p) => ({ value: p.value, label: p.label }))];
-  const labelFilterOptions    = [{ value: '', label: 'All Labels' }, ...LABEL_OPTIONS.map((l) => ({ value: l.value, label: l.label }))];
+  const labelFilterOptions    = [{ value: '', label: 'All Labels' }, ...ALL_TASK_LABELS.map((v) => ({ value: v, label: LABEL_LABELS[v] }))];
 
   const hasActiveFilters = !!(search || assigneeFilter || priorityFilter || labelFilter || myTasksOnly);
 
@@ -907,8 +920,8 @@ export const ScrumboardPage: React.FC = () => {
       {/* ── Page Header ─────────────────────────────────────────────── */}
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Scrumboard</h1>
-          <p className="text-sm text-slate-500 mt-0.5">Agile board · Drag cards to update status</p>
+          <h1 className="text-2xl font-bold text-hi">Scrumboard</h1>
+          <p className="text-sm text-dim mt-0.5">Agile board · Drag cards to update status</p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           <Button
@@ -943,7 +956,7 @@ export const ScrumboardPage: React.FC = () => {
       </div>
 
       {currentUser && (
-        <div className="flex items-center gap-2 text-xs text-slate-500 bg-slate-50 px-3 py-2 rounded-lg border border-slate-200">
+        <div className="flex items-center gap-2 text-xs text-dim bg-inset px-3 py-2 rounded-lg border border-base">
           <AlertCircle className="h-3.5 w-3.5 text-blue-500 shrink-0" />
           {isAdmin
             ? `Admin access: viewing all ${projects.length} project${projects.length === 1 ? '' : 's'} in the scrumboard.`
@@ -952,10 +965,10 @@ export const ScrumboardPage: React.FC = () => {
       )}
 
       {!effectiveProject && (
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-10 text-center">
-          <Target className="h-10 w-10 text-slate-300 mx-auto mb-3" />
-          <p className="text-sm font-medium text-slate-700">No accessible projects</p>
-          <p className="text-xs text-slate-500 mt-1">
+        <div className="bg-surface rounded-xl border border-base shadow-sm p-10 text-center">
+          <Target className="h-10 w-10 text-weak mx-auto mb-3" />
+          <p className="text-sm font-medium text-body">No accessible projects</p>
+          <p className="text-xs text-dim mt-1">
             {isAdmin
               ? 'Create a project to start planning work on the scrumboard.'
               : 'You will see projects here after you are added as a lead or project member.'}
@@ -965,7 +978,7 @@ export const ScrumboardPage: React.FC = () => {
 
       {/* ── Sprint Header ────────────────────────────────────────────── */}
       {effectiveProject && displaySprint && (
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
+        <div className="bg-surface rounded-xl border border-base shadow-sm p-4">
           <div className="flex flex-col sm:flex-row sm:items-center gap-3">
             {/* Sprint selector */}
             <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -978,13 +991,13 @@ export const ScrumboardPage: React.FC = () => {
                     <select
                       value={sprintFilter || displaySprint.id}
                       onChange={(e) => setSprintFilter(e.target.value)}
-                      className="appearance-none text-sm font-bold text-slate-900 bg-transparent border-0 pr-5 cursor-pointer focus:outline-none"
+                      className="appearance-none text-sm font-bold text-hi bg-transparent border-0 pr-5 cursor-pointer focus:outline-none"
                     >
                       {sprints.map((s) => (
                         <option key={s.id} value={s.id}>{s.name}</option>
                       ))}
                     </select>
-                    <ChevronDown className="absolute right-0 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 pointer-events-none" />
+                    <ChevronDown className="absolute right-0 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-weak pointer-events-none" />
                   </div>
                   <Badge className={SPRINT_STATUS_CONFIG[displaySprint.status].color} size="sm">
                     {SPRINT_STATUS_CONFIG[displaySprint.status].label}
@@ -992,7 +1005,7 @@ export const ScrumboardPage: React.FC = () => {
                 </div>
                 {displaySprint.goal && (
                   <div
-                    className="text-xs text-slate-600 mt-1 max-w-xl line-clamp-4 overflow-hidden [&_p]:m-0 [&_ul]:my-0 [&_ol]:my-0 [&_img]:max-h-12 [&_img]:rounded [&_img]:inline-block [&_img]:align-middle [&_img]:mr-1"
+                    className="text-xs text-dim mt-1 max-w-xl line-clamp-4 overflow-hidden [&_p]:m-0 [&_ul]:my-0 [&_ol]:my-0 [&_img]:max-h-12 [&_img]:rounded [&_img]:inline-block [&_img]:align-middle [&_img]:mr-1"
                     dangerouslySetInnerHTML={{ __html: sanitizeRichText(displaySprint.goal) }}
                   />
                 )}
@@ -1000,7 +1013,7 @@ export const ScrumboardPage: React.FC = () => {
             </div>
 
             {/* Sprint stats */}
-            <div className="flex items-center gap-4 text-xs text-slate-500 flex-wrap">
+            <div className="flex items-center gap-4 text-xs text-dim flex-wrap">
               <div className="flex items-center gap-1">
                 <Calendar className="h-3.5 w-3.5" />
                 <span>{formatDate(displaySprint.start_date)} – {formatDate(displaySprint.end_date)}</span>
@@ -1059,11 +1072,11 @@ export const ScrumboardPage: React.FC = () => {
 
           {/* Progress bar */}
           <div className="mt-3">
-            <div className="flex items-center justify-between text-xs text-slate-500 mb-1">
+            <div className="flex items-center justify-between text-xs text-dim mb-1">
               <span>Sprint Progress</span>
               <span className="font-medium">{progressPct}%</span>
             </div>
-            <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+            <div className="h-2 bg-inset rounded-full overflow-hidden">
               <div
                 className="h-full bg-linear-to-r from-blue-500 to-indigo-500 rounded-full transition-all duration-500"
                 style={{ width: `${progressPct}%` }}
@@ -1101,8 +1114,8 @@ export const ScrumboardPage: React.FC = () => {
             className={cn(
               'flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg border transition-colors',
               showFilters || hasActiveFilters
-                ? 'bg-blue-50 border-blue-300 text-blue-700'
-                : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                ? 'bg-blue-50 dark:bg-blue-950/40 border-blue-300 text-blue-700 dark:text-blue-400'
+                : 'bg-surface border-base text-dim hover:bg-hover'
             )}
           >
             <Filter className="h-4 w-4" />
@@ -1116,8 +1129,8 @@ export const ScrumboardPage: React.FC = () => {
             className={cn(
               'flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg border transition-colors',
               myTasksOnly
-                ? 'bg-indigo-50 border-indigo-300 text-indigo-700'
-                : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                ? 'bg-indigo-50 dark:bg-indigo-950/40 border-indigo-300 text-indigo-700 dark:text-indigo-400'
+                : 'bg-surface border-base text-dim hover:bg-hover'
             )}
           >
             My Tasks
@@ -1133,7 +1146,7 @@ export const ScrumboardPage: React.FC = () => {
         </div>
 
         {showFilters && (
-          <div className="flex gap-3 flex-wrap p-3 bg-slate-50 rounded-xl border border-slate-200">
+          <div className="flex gap-3 flex-wrap p-3 bg-inset rounded-xl border border-base">
             <div className="w-44">
               <Select
                 options={[{ value: '', label: 'All Assignees' }, ...users.map((u) => ({ value: u.id, label: u.full_name }))]}
@@ -1161,7 +1174,7 @@ export const ScrumboardPage: React.FC = () => {
 
       {/* ── Role Hint Banner ─────────────────────────────────────────── */}
       {currentUser && effectiveProject && (
-        <div className="flex items-center gap-2 text-xs text-slate-500 bg-slate-50 px-3 py-2 rounded-lg border border-slate-200">
+        <div className="flex items-center gap-2 text-xs text-dim bg-inset px-3 py-2 rounded-lg border border-base">
           <AlertCircle className="h-3.5 w-3.5 text-blue-500 shrink-0" />
           {currentUser.role === 'qa' && 'QA: Move tasks in Testing column to Done when they pass, or back to In Progress if bugs found.'}
           {currentUser.role === 'developer' && 'Developer: Move your In Progress tasks to Code Review when ready, then to Testing.'}
@@ -1200,7 +1213,7 @@ export const ScrumboardPage: React.FC = () => {
                     <div className="flex items-center gap-1.5">
                       <span className={cn('shrink-0', col.color)}>{col.icon}</span>
                       <span className={cn('text-xs font-bold', col.color)}>{col.label}</span>
-                      <span className={cn('text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-white/70', col.color)}>
+                      <span className={cn('text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-surface/70 dark:bg-black/30', col.color)}>
                         {colTasks.length}
                       </span>
                     </div>

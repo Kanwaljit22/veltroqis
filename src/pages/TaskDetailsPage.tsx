@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import {
   ArrowLeft,
   Calendar,
+  Check,
   ChevronRight,
   Clock3,
   Edit3,
@@ -43,6 +44,7 @@ import {
   formatDate,
   formatTimeAgo,
 } from '../lib/utils';
+import { TaskLabelIcon } from '../lib/taskLabelIcons';
 import type { TaskLabel, TaskPriority, TaskStatus } from '../types';
 
 export const TaskDetailsPage: React.FC = () => {
@@ -155,7 +157,7 @@ export const TaskDetailsPage: React.FC = () => {
     return (
       <div className="space-y-4">
         <Skeleton className="h-5 w-56 rounded-md" />
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+        <div className="bg-surface rounded-2xl border border-base shadow-sm p-6">
           <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_320px] gap-8">
             <div className="space-y-6">
               <Skeleton className="h-24 w-full rounded-2xl" />
@@ -171,9 +173,9 @@ export const TaskDetailsPage: React.FC = () => {
 
   if (!task) {
     return (
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8 text-center">
-        <h1 className="text-xl font-bold text-slate-900 mb-2">Task not found</h1>
-        <p className="text-sm text-slate-500 mb-5">The task may have been removed or you may not have access to it.</p>
+      <div className="bg-surface rounded-2xl border border-base shadow-sm p-8 text-center">
+        <h1 className="text-xl font-bold text-hi mb-2">Task not found</h1>
+        <p className="text-sm text-dim mb-5">The task may have been removed or you may not have access to it.</p>
         <Button variant="outline" onClick={() => navigate('/scrumboard')}>
           Back to Scrumboard
         </Button>
@@ -205,7 +207,7 @@ export const TaskDetailsPage: React.FC = () => {
             >
               {boardCrumb.label}
             </Link>
-            <ChevronRight className="h-4 w-4 shrink-0 text-slate-400" aria-hidden />
+            <ChevronRight className="h-4 w-4 shrink-0 text-weak" aria-hidden />
           </li>
           <li className="flex min-w-0 max-w-full items-center gap-2">
             <Link
@@ -215,11 +217,11 @@ export const TaskDetailsPage: React.FC = () => {
             >
               {projectLoading ? 'Loading…' : project?.name ?? 'Project'}
             </Link>
-            <ChevronRight className="h-4 w-4 shrink-0 text-slate-400" aria-hidden />
+            <ChevronRight className="h-4 w-4 shrink-0 text-weak" aria-hidden />
           </li>
           <li className="min-w-0 max-w-full flex-1 sm:flex-initial">
             <span
-              className="block truncate font-semibold text-slate-900 sm:max-w-xl"
+              className="block truncate font-semibold text-hi sm:max-w-xl"
               aria-current="page"
             >
               {task.title}
@@ -228,7 +230,7 @@ export const TaskDetailsPage: React.FC = () => {
         </ol>
       </nav>
 
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+      <div className="bg-surface rounded-2xl border border-base shadow-sm p-6">
         <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_320px] gap-8 items-start">
           <div className="space-y-8 min-w-0">
             <section>
@@ -238,8 +240,12 @@ export const TaskDetailsPage: React.FC = () => {
                     {task.labels?.map((label) => (
                       <span
                         key={label}
-                        className={cn('text-[11px] font-semibold px-2 py-1 rounded-full border', LABEL_COLORS[label])}
+                        className={cn(
+                          'inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-1 rounded-full border',
+                          LABEL_COLORS[label]
+                        )}
                       >
+                        <TaskLabelIcon label={label} className="h-3 w-3 opacity-90" strokeWidth={2.25} />
                         {LABEL_LABELS[label]}
                       </span>
                     ))}
@@ -250,7 +256,7 @@ export const TaskDetailsPage: React.FC = () => {
                       {STATUS_LABELS[task.status]}
                     </Badge>
                     {task.story_points !== undefined && (
-                      <span className="inline-flex items-center gap-1 text-xs font-semibold text-slate-600 bg-slate-100 px-2 py-1 rounded-full">
+                      <span className="inline-flex items-center gap-1 text-xs font-semibold text-dim bg-inset px-2 py-1 rounded-full">
                         <Zap className="h-3 w-3 text-amber-500" />
                         {task.story_points} SP
                       </span>
@@ -266,7 +272,7 @@ export const TaskDetailsPage: React.FC = () => {
                         className="h-12 text-2xl font-bold"
                       />
                       <div>
-                        <p className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-3">Description</p>
+                        <p className="text-sm font-semibold text-weak uppercase tracking-wider mb-3">Description</p>
                         <Textarea
                           value={draftDescription}
                           onChange={(event) => setDraftDescription(event.target.value)}
@@ -278,11 +284,11 @@ export const TaskDetailsPage: React.FC = () => {
                     </div>
                   ) : (
                     <div className="space-y-5">
-                      <h1 className="text-3xl font-bold text-slate-900 leading-tight">{task.title}</h1>
+                      <h1 className="text-3xl font-bold text-hi leading-tight">{task.title}</h1>
                       <div>
-                        <p className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-3">Description</p>
-                        <div className="bg-slate-50 rounded-xl px-4 py-4">
-                          <p className="text-base leading-7 text-slate-700">
+                        <p className="text-sm font-semibold text-weak uppercase tracking-wider mb-3">Description</p>
+                        <div className="bg-inset rounded-xl px-4 py-4">
+                          <p className="text-base leading-7 text-body">
                             {task.description || 'No description provided yet.'}
                           </p>
                         </div>
@@ -315,51 +321,51 @@ export const TaskDetailsPage: React.FC = () => {
 
                   <button
                     onClick={() => navigate(-1)}
-                    className="p-2 rounded-lg hover:bg-slate-100 transition-colors"
+                    className="p-2 rounded-lg hover:bg-hover transition-colors"
                     title="Go back"
                   >
-                    <ArrowLeft className="h-5 w-5 text-slate-600" />
+                    <ArrowLeft className="h-5 w-5 text-dim" />
                   </button>
                 </div>
               </div>
             </section>
 
-            <section className="border-t border-slate-100 pt-6">
+            <section className="border-t border-subtle pt-6">
               <div className="flex items-center gap-2 mb-5">
                 <MessageSquare className="h-4 w-4 text-blue-500" />
-                <h2 className="text-base font-semibold text-slate-900">Comments</h2>
-                <span className="text-xs font-medium text-slate-400">{comments.length}</span>
+                <h2 className="text-base font-semibold text-hi">Comments</h2>
+                <span className="text-xs font-medium text-weak">{comments.length}</span>
               </div>
 
               <div className="space-y-4">
                 {comments.length === 0 ? (
-                  <div className="text-sm text-slate-400 bg-slate-50 rounded-xl px-4 py-6 text-center">
+                  <div className="text-sm text-weak bg-inset rounded-xl px-4 py-6 text-center">
                     No comments yet.
                   </div>
                 ) : (
                   comments.map((comment) => (
                     <div key={comment.id} className={cn('flex gap-3', comment.parent_id && 'ml-8')}>
                       <Avatar src={comment.author?.avatar_url} name={comment.author?.full_name ?? ''} size="sm" />
-                      <div className="flex-1 bg-slate-50 rounded-xl px-4 py-3">
+                      <div className="flex-1 bg-inset rounded-xl px-4 py-3">
                         <div className="flex items-center gap-2 mb-1.5">
-                          <span className="text-sm font-semibold text-slate-800">{comment.author?.full_name}</span>
-                          <span className="text-xs text-slate-400">{formatTimeAgo(comment.created_at)}</span>
+                          <span className="text-sm font-semibold text-hi">{comment.author?.full_name}</span>
+                          <span className="text-xs text-weak">{formatTimeAgo(comment.created_at)}</span>
                         </div>
-                        <p className="text-sm text-slate-700 leading-6">{comment.content}</p>
+                        <p className="text-sm text-body leading-6">{comment.content}</p>
                       </div>
                     </div>
                   ))
                 )}
               </div>
 
-              <div className="flex gap-3 pt-5 mt-5 border-t border-slate-100">
+              <div className="flex gap-3 pt-5 mt-5 border-t border-subtle">
                 {currentUser && <Avatar src={currentUser.avatar_url} name={currentUser.full_name} size="sm" />}
                 <div className="flex-1 flex gap-2">
                   <input
                     value={newComment}
                     onChange={(event) => setNewComment(event.target.value)}
                     placeholder="Write a comment..."
-                    className="flex-1 text-sm border border-slate-200 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="flex-1 text-sm border border-base rounded-xl px-3 py-2.5 bg-surface text-hi placeholder:text-weak focus:outline-none focus:ring-2 focus:ring-blue-500"
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' && !e.shiftKey) {
                         e.preventDefault();
@@ -380,15 +386,15 @@ export const TaskDetailsPage: React.FC = () => {
               </div>
             </section>
 
-            <section className="border-t border-slate-100 pt-6">
+            <section className="border-t border-subtle pt-6">
               <div className="flex items-center gap-2 mb-5">
                 <Clock3 className="h-4 w-4 text-violet-500" />
-                <h2 className="text-base font-semibold text-slate-900">Activity</h2>
+                <h2 className="text-base font-semibold text-hi">Activity</h2>
               </div>
 
               <div className="space-y-4">
                 {activity.length === 0 ? (
-                  <div className="text-sm text-slate-400 bg-slate-50 rounded-xl px-4 py-6 text-center">
+                  <div className="text-sm text-weak bg-inset rounded-xl px-4 py-6 text-center">
                     No activity recorded yet.
                   </div>
                 ) : (
@@ -396,11 +402,11 @@ export const TaskDetailsPage: React.FC = () => {
                     <div key={entry.id} className="flex gap-3">
                       <Avatar src={entry.user?.avatar_url} name={entry.user?.full_name ?? ''} size="xs" />
                       <div className="flex-1">
-                        <p className="text-sm text-slate-700">
-                          <span className="font-semibold text-slate-900">{entry.user?.full_name}</span>
-                          <span className="text-slate-500"> {entry.action}</span>
+                        <p className="text-sm text-body">
+                          <span className="font-semibold text-hi">{entry.user?.full_name}</span>
+                          <span className="text-dim"> {entry.action}</span>
                         </p>
-                        <p className="text-xs text-slate-400 mt-1">{formatTimeAgo(entry.created_at)}</p>
+                        <p className="text-xs text-weak mt-1">{formatTimeAgo(entry.created_at)}</p>
                       </div>
                     </div>
                   ))
@@ -409,16 +415,16 @@ export const TaskDetailsPage: React.FC = () => {
             </section>
           </div>
 
-          <aside className="xl:border-l xl:border-slate-100 xl:pl-6 sticky top-20">
-            <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-4">Task Details</h2>
+          <aside className="xl:border-l xl:border-subtle xl:pl-6 sticky top-20">
+            <h2 className="text-sm font-semibold text-weak uppercase tracking-wider mb-4">Task Details</h2>
 
             <div className="space-y-5">
               <div>
-                <p className="text-xs font-medium text-slate-400 mb-1.5">Status</p>
+                <p className="text-xs font-medium text-weak mb-1.5">Status</p>
                 <select
                   value={task.status}
                   onChange={(event) => handleStatusChange(event.target.value as TaskStatus)}
-                  className="w-full text-sm border border-slate-200 rounded-xl px-3 py-2.5 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full text-sm border border-base rounded-xl px-3 py-2.5 bg-surface text-hi focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   {(Object.keys(STATUS_LABELS) as TaskStatus[]).map((status) => (
                     <option key={status} value={status}>{STATUS_LABELS[status]}</option>
@@ -427,22 +433,22 @@ export const TaskDetailsPage: React.FC = () => {
               </div>
 
               <div>
-                <p className="text-xs font-medium text-slate-400 mb-2">Reporter</p>
+                <p className="text-xs font-medium text-weak mb-2">Reporter</p>
                 {task.reporter ? (
                   <div className="flex items-center gap-3">
                     <Avatar src={task.reporter.avatar_url} name={task.reporter.full_name} size="sm" />
                     <div>
-                      <p className="text-sm font-medium text-slate-900">{task.reporter.full_name}</p>
-                      <p className="text-xs text-slate-500">{task.reporter.email}</p>
+                      <p className="text-sm font-medium text-hi">{task.reporter.full_name}</p>
+                      <p className="text-xs text-dim">{task.reporter.email}</p>
                     </div>
                   </div>
                 ) : (
-                  <p className="text-sm text-slate-500">Not assigned</p>
+                  <p className="text-sm text-dim">Not assigned</p>
                 )}
               </div>
 
               <div>
-                <p className="text-xs font-medium text-slate-400 mb-2">Assignees</p>
+                <p className="text-xs font-medium text-weak mb-2">Assignees</p>
                 {can('assign_tasks') ? (
                   <MultiUserSelect
                     options={users.map((u) => ({ value: u.id, label: u.full_name }))}
@@ -464,13 +470,13 @@ export const TaskDetailsPage: React.FC = () => {
                         <div key={assignee.id} className="flex items-center gap-3">
                           <Avatar src={assignee.avatar_url} name={assignee.full_name} size="sm" />
                           <div className="min-w-0">
-                            <p className="text-sm font-medium text-slate-900 truncate">{assignee.full_name}</p>
-                            <p className="text-xs text-slate-500 capitalize">{assignee.role.replace('_', ' ')}</p>
+                            <p className="text-sm font-medium text-hi truncate">{assignee.full_name}</p>
+                            <p className="text-xs text-dim capitalize">{assignee.role.replace('_', ' ')}</p>
                           </div>
                         </div>
                       ))
                     ) : (
-                      <p className="text-sm text-slate-500">No assignees yet</p>
+                      <p className="text-sm text-dim">No assignees yet</p>
                     )}
                   </div>
                 )}
@@ -478,7 +484,7 @@ export const TaskDetailsPage: React.FC = () => {
 
               <div className="grid grid-cols-1 gap-4">
                 <div>
-                  <p className="text-xs font-medium text-slate-400 mb-1.5">Priority</p>
+                  <p className="text-xs font-medium text-weak mb-1.5">Priority</p>
                   <div className="relative">
                     <select
                       value={task.priority}
@@ -506,16 +512,16 @@ export const TaskDetailsPage: React.FC = () => {
                 </div>
 
                 <div>
-                  <p className="text-xs font-medium text-slate-400 mb-1.5">Due Date</p>
+                  <p className="text-xs font-medium text-weak mb-1.5">Due Date</p>
                   <div className="flex items-center gap-1.5">
                     <div className="relative flex-1">
-                      <Calendar className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+                      <Calendar className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-weak" />
                       <input
                         type="date"
                         value={task.due_date ? task.due_date.substring(0, 10) : ''}
                         onChange={(e) => handleDueDateChange(e.target.value)}
                         disabled={updateTask.isPending}
-                        className="w-full text-sm border border-slate-200 rounded-xl pl-8 pr-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-60 disabled:cursor-not-allowed"
+                        className="w-full text-sm border border-base rounded-xl pl-8 pr-3 py-2 bg-surface text-hi focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-60 disabled:cursor-not-allowed"
                       />
                     </div>
                     {task.due_date && (
@@ -523,7 +529,7 @@ export const TaskDetailsPage: React.FC = () => {
                         onClick={() => handleDueDateChange('')}
                         disabled={updateTask.isPending}
                         title="Clear due date"
-                        className="shrink-0 p-1.5 rounded-lg hover:bg-slate-100 transition-colors text-slate-400 hover:text-slate-600 disabled:opacity-50"
+                        className="shrink-0 p-1.5 rounded-lg hover:bg-hover transition-colors text-weak hover:text-dim disabled:opacity-50"
                       >
                         <X className="h-3.5 w-3.5" />
                       </button>
@@ -532,8 +538,8 @@ export const TaskDetailsPage: React.FC = () => {
                 </div>
 
                 <div>
-                  <p className="text-xs font-medium text-slate-400 mb-1.5">Story Points</p>
-                  <div className="flex items-center gap-2 text-sm font-semibold text-slate-700">
+                  <p className="text-xs font-medium text-weak mb-1.5">Story Points</p>
+                  <div className="flex items-center gap-2 text-sm font-semibold text-body">
                     <Zap className="h-3.5 w-3.5 text-amber-500" />
                     {task.story_points ?? 0} points
                   </div>
@@ -541,8 +547,8 @@ export const TaskDetailsPage: React.FC = () => {
 
                 <div>
                   <div className="flex items-center gap-1.5 mb-2">
-                    <Tag className="h-3.5 w-3.5 text-slate-400" />
-                    <p className="text-xs font-medium text-slate-400">Tags</p>
+                    <Tag className="h-3.5 w-3.5 text-weak" />
+                    <p className="text-xs font-medium text-weak">Tags</p>
                   </div>
                   <div className="space-y-2">
                     <div className="flex flex-wrap gap-1.5">
@@ -554,6 +560,7 @@ export const TaskDetailsPage: React.FC = () => {
                             LABEL_COLORS[label]
                           )}
                         >
+                          <TaskLabelIcon label={label} className="h-3 w-3 opacity-90" strokeWidth={2.25} />
                           {LABEL_LABELS[label]}
                           <button
                             onClick={() => handleLabelToggle(label)}
@@ -566,7 +573,7 @@ export const TaskDetailsPage: React.FC = () => {
                         </span>
                       ))}
                       {(task.labels ?? []).length === 0 && (
-                        <p className="text-sm text-slate-400 italic">No tags added</p>
+                        <p className="text-sm text-weak italic">No tags added</p>
                       )}
                     </div>
 
@@ -581,7 +588,7 @@ export const TaskDetailsPage: React.FC = () => {
                       </button>
 
                       {showTagDropdown && (
-                        <div className="absolute left-0 top-6 z-30 w-52 bg-white border border-slate-200 rounded-xl shadow-xl p-1.5 animate-fade-in">
+                        <div className="absolute left-0 top-6 z-30 w-52 bg-overlay border border-base rounded-xl shadow-xl p-1.5 animate-fade-in">
                           {(Object.keys(LABEL_LABELS) as TaskLabel[]).map((label) => {
                             const isSelected = task.labels?.includes(label) ?? false;
                             return (
@@ -592,20 +599,20 @@ export const TaskDetailsPage: React.FC = () => {
                                 className={cn(
                                   'w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-left text-xs font-medium transition-colors disabled:opacity-50',
                                   isSelected
-                                    ? 'bg-slate-50 text-slate-500'
-                                    : 'hover:bg-slate-50 text-slate-700'
+                                    ? 'bg-inset text-dim'
+                                    : 'hover:bg-hover text-body'
                                 )}
                               >
                                 <span
                                   className={cn(
-                                    'shrink-0 w-2.5 h-2.5 rounded-full border',
+                                    'flex shrink-0 h-6 w-6 items-center justify-center rounded-md border',
                                     LABEL_COLORS[label]
                                   )}
-                                />
+                                >
+                                  <TaskLabelIcon label={label} className="h-3.5 w-3.5" strokeWidth={2.25} />
+                                </span>
                                 <span className="flex-1">{LABEL_LABELS[label]}</span>
-                                {isSelected && (
-                                  <span className="text-blue-500 font-bold text-[10px]">✓</span>
-                                )}
+                                {isSelected && <Check className="h-3.5 w-3.5 text-blue-600 shrink-0" aria-hidden />}
                               </button>
                             );
                           })}
@@ -616,33 +623,33 @@ export const TaskDetailsPage: React.FC = () => {
                 </div>
 
                 <div>
-                  <p className="text-xs font-medium text-slate-400 mb-1.5">Project</p>
-                  <div className="flex items-center gap-2 text-sm text-slate-700">
-                    <FolderKanban className="h-3.5 w-3.5 text-slate-400" />
+                  <p className="text-xs font-medium text-weak mb-1.5">Project</p>
+                  <div className="flex items-center gap-2 text-sm text-body">
+                    <FolderKanban className="h-3.5 w-3.5 text-weak" />
                     {project?.name ?? 'Unknown project'}
                   </div>
                 </div>
 
                 <div>
-                  <p className="text-xs font-medium text-slate-400 mb-1.5">Created</p>
-                  <div className="flex items-center gap-2 text-sm text-slate-700">
-                    <User className="h-3.5 w-3.5 text-slate-400" />
+                  <p className="text-xs font-medium text-weak mb-1.5">Created</p>
+                  <div className="flex items-center gap-2 text-sm text-body">
+                    <User className="h-3.5 w-3.5 text-weak" />
                     {formatDate(task.created_at)}
                   </div>
                 </div>
 
                 <div>
-                  <p className="text-xs font-medium text-slate-400 mb-1.5">Team</p>
-                  <div className="flex items-center gap-2 text-sm text-slate-700">
-                    <Users className="h-3.5 w-3.5 text-slate-400" />
+                  <p className="text-xs font-medium text-weak mb-1.5">Team</p>
+                  <div className="flex items-center gap-2 text-sm text-body">
+                    <Users className="h-3.5 w-3.5 text-weak" />
                     {(task.assignees?.length ?? 0) + (task.reporter ? 1 : 0)} people involved
                   </div>
                 </div>
 
                 <div>
-                  <p className="text-xs font-medium text-slate-400 mb-1.5">Type</p>
-                  <div className="flex items-center gap-2 text-sm text-slate-700">
-                    <Flag className="h-3.5 w-3.5 text-slate-400" />
+                  <p className="text-xs font-medium text-weak mb-1.5">Type</p>
+                  <div className="flex items-center gap-2 text-sm text-body">
+                    <Flag className="h-3.5 w-3.5 text-weak" />
                     {task.labels?.[0] ? LABEL_LABELS[task.labels[0]] : 'General task'}
                   </div>
                 </div>

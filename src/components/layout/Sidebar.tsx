@@ -60,7 +60,7 @@ export const Sidebar: React.FC = () => {
         {sidebarOpen && (
           <div className="overflow-hidden">
             <p className="font-bold text-sm tracking-widest text-white truncate">VELTROQIS</p>
-            <p className="text-[9px] text-slate-400 tracking-wider truncate">INTELLIGENT DEV</p>
+            <p className="text-[9px] text-weak tracking-wider truncate">INTELLIGENT DEV</p>
           </div>
         )}
       </div>
@@ -81,8 +81,8 @@ export const Sidebar: React.FC = () => {
                 className={cn(
                   'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-150 group',
                   isActive
-                    ? 'bg-white/10 text-white'
-                    : 'text-slate-400 hover:text-white hover:bg-white/5'
+                    ? 'bg-surface/10 text-white'
+                    : 'text-weak hover:text-white hover:bg-surface/5'
                 )}
               >
                 <Icon className="h-5 w-5 shrink-0" />
@@ -102,7 +102,7 @@ export const Sidebar: React.FC = () => {
       <div className="px-2 py-2 border-t border-slate-700/50 shrink-0">
         <button
           onClick={toggleSidebar}
-          className="flex items-center gap-2 w-full px-3 py-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-colors text-sm"
+          className="flex items-center gap-2 w-full px-3 py-1.5 rounded-lg text-weak hover:text-white hover:bg-surface/5 transition-colors text-sm"
           title={sidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
         >
           {sidebarOpen ? (

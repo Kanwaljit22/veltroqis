@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ─── Static theme values ─────────────────────────────────────────────────── */
 @theme {
   --color-primary: #0f172a;
   --color-primary-foreground: #f8fafc;
@@ -8,71 +11,121 @@
   --font-sans: 'Inter', system-ui, sans-serif;
 }
 
-* {
-  box-sizing: border-box;
+/* ─── Semantic design tokens (CSS custom properties) ──────────────────────── */
+/*
+  These vars cascade automatically when `.dark` is on <html>.
+  Use the @utility classes below (bg-surface, text-hi, etc.) in JSX
+  instead of hardcoded slate-* values so dark mode works site-wide.
+*/
+:root {
+  /* Surfaces */
+  --bg-page:    #f8fafc;   /* outer page shell */
+  --bg-surface: #ffffff;   /* cards, panels */
+  --bg-inset:   #f1f5f9;   /* tinted sections inside cards */
+  --bg-overlay: #ffffff;   /* dropdowns, modals */
+  --bg-hover:   #f8fafc;   /* hover states */
+
+  /* Foreground */
+  --fg-hi:   #0f172a;  /* headings, important labels */
+  --fg-body: #334155;  /* body / paragraph text */
+  --fg-dim:  #64748b;  /* secondary text */
+  --fg-weak: #94a3b8;  /* placeholder, tertiary */
+
+  /* Borders / dividers */
+  --border-base:   #e2e8f0;
+  --border-subtle: #f1f5f9;
+
+  /* Chart colours (Recharts props) */
+  --chart-grid:          #f1f5f9;
+  --chart-tick:          #94a3b8;
+  --chart-created-line:  #0f172a;
+  --chart-tooltip-bg:    #ffffff;
+  --chart-tooltip-border:#e2e8f0;
 }
+
+.dark {
+  /* Surfaces */
+  --bg-page:    #020617;   /* slate-950 */
+  --bg-surface: #0f172a;   /* slate-900 */
+  --bg-inset:   #1e293b;   /* slate-800 */
+  --bg-overlay: #1e293b;   /* slate-800 */
+  --bg-hover:   #1e293b;   /* slate-800 */
+
+  /* Foreground */
+  --fg-hi:   #f1f5f9;  /* slate-100 */
+  --fg-body: #cbd5e1;  /* slate-300 */
+  --fg-dim:  #94a3b8;  /* slate-400 */
+  --fg-weak: #64748b;  /* slate-500 */
+
+  /* Borders / dividers */
+  --border-base:   #1e293b;
+  --border-subtle: #0f172a;
+
+  /* Chart colours */
+  --chart-grid:          #1e293b;
+  --chart-tick:          #64748b;
+  --chart-created-line:  #f1f5f9;
+  --chart-tooltip-bg:    #0f172a;
+  --chart-tooltip-border:#1e293b;
+}
+
+/* ─── Semantic utility classes (use instead of slate-* hardcodes) ─────────── */
+@utility bg-page    { background-color: var(--bg-page); }
+@utility bg-surface { background-color: var(--bg-surface); }
+@utility bg-inset   { background-color: var(--bg-inset); }
+@utility bg-overlay { background-color: var(--bg-overlay); }
+@utility bg-hover   { background-color: var(--bg-hover); }
+
+@utility text-hi   { color: var(--fg-hi); }
+@utility text-body { color: var(--fg-body); }
+@utility text-dim  { color: var(--fg-dim); }
+@utility text-weak { color: var(--fg-weak); }
+
+@utility border-base   { border-color: var(--border-base); }
+@utility border-subtle { border-color: var(--border-subtle); }
+
+@utility divide-base {
+  & > * + * { border-color: var(--border-base); }
+}
+@utility divide-subtle {
+  & > * + * { border-color: var(--border-subtle); }
+}
+
+/* ─── Global base ─────────────────────────────────────────────────────────── */
+* { box-sizing: border-box; }
 
 body {
   font-family: var(--font-sans);
-  background-color: #f8fafc;
-  color: #0f172a;
+  background-color: var(--bg-page);
+  color: var(--fg-hi);
 }
 
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-::-webkit-scrollbar-track {
-  background: #f1f5f9;
-}
-::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 3px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
-}
+/* ─── Custom scrollbar ───────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track  { background: var(--bg-inset); }
+::-webkit-scrollbar-thumb  { background: var(--border-base); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--fg-weak); }
 
-/* Kanban drag styles */
-.dragging {
-  opacity: 0.5;
-}
+/* ─── Kanban drag ─────────────────────────────────────────────────────────── */
+.dragging { opacity: 0.5; }
 
-/* Animations */
+/* ─── Animations ──────────────────────────────────────────────────────────── */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: translateY(0); }
+  to   { opacity: 1; transform: translateY(0); }
 }
-.animate-fade-in {
-  animation: fadeIn 0.2s ease-out;
-}
+.animate-fade-in { animation: fadeIn 0.2s ease-out; }
 
-/* TipTap placeholder (see RichTextEditor) */
+/* ─── TipTap / RichTextEditor ─────────────────────────────────────────────── */
 .rich-text-editor .ProseMirror p.is-empty::before {
   content: attr(data-placeholder);
   float: left;
-  color: rgb(148 163 184);
+  color: var(--fg-weak);
   height: 0;
   pointer-events: none;
 }
-
-.rich-text-editor .ProseMirror ul {
-  list-style-type: disc;
-  padding-left: 1.25rem;
-  margin: 0.25rem 0;
-}
-.rich-text-editor .ProseMirror ol {
-  list-style-type: decimal;
-  padding-left: 1.25rem;
-  margin: 0.25rem 0;
-}
-.rich-text-editor .ProseMirror li {
-  margin: 0.125rem 0;
-}
-.rich-text-editor .ProseMirror p {
-  margin: 0.25rem 0;
-}
-.rich-text-editor .ProseMirror strong {
-  font-weight: 600;
-}
+.rich-text-editor .ProseMirror ul  { list-style-type: disc;     padding-left: 1.25rem; margin: 0.25rem 0; }
+.rich-text-editor .ProseMirror ol  { list-style-type: decimal;  padding-left: 1.25rem; margin: 0.25rem 0; }
+.rich-text-editor .ProseMirror li  { margin: 0.125rem 0; }
+.rich-text-editor .ProseMirror p   { margin: 0.25rem 0; }
+.rich-text-editor .ProseMirror strong { font-weight: 600; }

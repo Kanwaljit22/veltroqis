@@ -112,7 +112,7 @@ const AttendanceBadge: React.FC<{ attended: boolean; submitted: boolean }> = ({ 
     );
   }
   return (
-    <span className="flex items-center gap-1 text-[10px] font-semibold text-slate-500 bg-slate-50 px-2 py-0.5 rounded-full border border-slate-200">
+    <span className="flex items-center gap-1 text-[10px] font-semibold text-dim bg-inset px-2 py-0.5 rounded-full border border-base">
       <CircleMinus className="h-3 w-3" /> Pending
     </span>
   );
@@ -139,13 +139,13 @@ const BlockerCard: React.FC<{
     )}>
       <div className={cn('h-2 w-2 rounded-full mt-1.5 shrink-0', blocker.resolved ? 'bg-green-500' : cfg.dot)} />
       <div className="flex-1 min-w-0">
-        <p className={cn('text-sm font-medium', blocker.resolved ? 'text-slate-500 line-through' : 'text-slate-800')}>
+        <p className={cn('text-sm font-medium', blocker.resolved ? 'text-dim line-through' : 'text-hi')}>
           {blocker.description}
         </p>
         <div className="flex items-center gap-2 mt-1 flex-wrap">
           <Badge className={cfg.color} size="sm">{cfg.label}</Badge>
           {blocker.days_blocked > 0 && (
-            <span className="text-[10px] text-slate-400 flex items-center gap-0.5">
+            <span className="text-[10px] text-weak flex items-center gap-0.5">
               <Clock className="h-3 w-3" /> {blocker.days_blocked}d blocked
             </span>
           )}
@@ -155,14 +155,14 @@ const BlockerCard: React.FC<{
             </span>
           )}
           {entry.user && (
-            <span className="text-[10px] text-slate-400">{entry.user.full_name}</span>
+            <span className="text-[10px] text-weak">{entry.user.full_name}</span>
           )}
         </div>
       </div>
       {!blocker.resolved && canResolve && (
         <button
           onClick={() => resolveBlocker.mutate({ sessionId, entryId: entry.id, blockerId: blocker.id, projectId })}
-          className="shrink-0 flex items-center gap-1 text-[10px] font-semibold text-green-700 bg-white hover:bg-green-50 border border-green-200 px-2 py-1 rounded-lg transition-colors"
+          className="shrink-0 flex items-center gap-1 text-[10px] font-semibold text-green-700 bg-surface hover:bg-green-50 border border-green-200 px-2 py-1 rounded-lg transition-colors"
           title="Mark as resolved"
         >
           <CheckCheck className="h-3 w-3" /> Resolve
@@ -191,13 +191,13 @@ const MemberEntryCard: React.FC<{
 
   return (
     <div className={cn(
-      'bg-white rounded-xl border shadow-sm transition-all',
-      hasBlockers ? 'border-red-200' : 'border-slate-200',
+      'bg-surface rounded-xl border shadow-sm transition-all',
+      hasBlockers ? 'border-red-200' : 'border-base',
       isExpanded && 'shadow-md'
     )}>
       {/* Header */}
       <div
-        className="flex items-center gap-3 p-3 cursor-pointer hover:bg-slate-50 rounded-xl transition-colors"
+        className="flex items-center gap-3 p-3 cursor-pointer hover:bg-inset rounded-xl transition-colors"
         onClick={onToggle}
       >
         {entry.user ? (
@@ -207,14 +207,14 @@ const MemberEntryCard: React.FC<{
         )}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-sm font-semibold text-slate-800">
+            <span className="text-sm font-semibold text-hi">
               {entry.user?.full_name ?? 'Unknown'}
               {isCurrentUser && <span className="text-[10px] text-blue-500 ml-1">(you)</span>}
             </span>
-            <span className="text-[10px] text-slate-400 capitalize">{entry.user?.role?.replace('_', ' ')}</span>
+            <span className="text-[10px] text-weak capitalize">{entry.user?.role?.replace('_', ' ')}</span>
           </div>
           {submitted && (
-            <p className="text-[10px] text-slate-400">{formatTimeAgo(entry.submitted_at!)}</p>
+            <p className="text-[10px] text-weak">{formatTimeAgo(entry.submitted_at!)}</p>
           )}
         </div>
         <div className="flex items-center gap-2 shrink-0">
@@ -225,7 +225,7 @@ const MemberEntryCard: React.FC<{
             </span>
           )}
           {isLiveActive && liveTimer !== undefined && (
-            <span className="text-[10px] font-mono text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
+            <span className="text-[10px] font-mono text-dim bg-inset px-2 py-0.5 rounded-full">
               {formatSeconds(liveTimer)}
             </span>
           )}
@@ -238,22 +238,22 @@ const MemberEntryCard: React.FC<{
               Edit
             </button>
           )}
-          {isExpanded ? <ChevronDown className="h-4 w-4 text-slate-400" /> : <ChevronRight className="h-4 w-4 text-slate-400" />}
+          {isExpanded ? <ChevronDown className="h-4 w-4 text-weak" /> : <ChevronRight className="h-4 w-4 text-weak" />}
         </div>
       </div>
 
       {/* Expanded content */}
       {isExpanded && submitted && (
-        <div className="px-4 pb-4 space-y-4 border-t border-slate-100 pt-3">
+        <div className="px-4 pb-4 space-y-4 border-t border-subtle pt-3">
           {/* Yesterday */}
           {entry.yesterday.length > 0 && (
             <div>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1">
+              <p className="text-[10px] font-bold text-weak uppercase tracking-wider mb-2 flex items-center gap-1">
                 <CheckCircle2 className="h-3 w-3 text-green-500" /> Yesterday
               </p>
               <ul className="space-y-1.5">
                 {entry.yesterday.map((y, i) => (
-                  <li key={i} className="flex items-start gap-2 text-sm text-slate-700">
+                  <li key={i} className="flex items-start gap-2 text-sm text-body">
                     <span className="mt-0.5 h-4 w-4 rounded-full bg-green-100 flex items-center justify-center shrink-0">
                       <CheckCircle2 className="h-2.5 w-2.5 text-green-600" />
                     </span>
@@ -274,12 +274,12 @@ const MemberEntryCard: React.FC<{
           {/* Today */}
           {entry.today.length > 0 && (
             <div>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1">
+              <p className="text-[10px] font-bold text-weak uppercase tracking-wider mb-2 flex items-center gap-1">
                 <ArrowRight className="h-3 w-3 text-blue-500" /> Today
               </p>
               <ul className="space-y-1.5">
                 {entry.today.map((td, i) => (
-                  <li key={i} className="flex items-start gap-2 text-sm text-slate-700">
+                  <li key={i} className="flex items-start gap-2 text-sm text-body">
                     <span className="mt-0.5 h-4 w-4 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
                       <Flag className="h-2.5 w-2.5 text-blue-600" />
                     </span>
@@ -300,7 +300,7 @@ const MemberEntryCard: React.FC<{
           {/* Blockers */}
           {entry.blockers.length > 0 && (
             <div>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1">
+              <p className="text-[10px] font-bold text-weak uppercase tracking-wider mb-2 flex items-center gap-1">
                 <ShieldAlert className="h-3 w-3 text-red-500" /> Blockers
               </p>
               <div className="space-y-2">
@@ -319,16 +319,16 @@ const MemberEntryCard: React.FC<{
           )}
 
           {entry.yesterday.length === 0 && entry.today.length === 0 && entry.blockers.length === 0 && (
-            <p className="text-sm text-slate-400 italic">No updates provided.</p>
+            <p className="text-sm text-weak italic">No updates provided.</p>
           )}
         </div>
       )}
 
       {/* Not submitted */}
       {isExpanded && !submitted && (
-        <div className="px-4 pb-4 pt-3 border-t border-slate-100 text-center">
-          <Bell className="h-6 w-6 text-slate-300 mx-auto mb-1" />
-          <p className="text-sm text-slate-400">Update not submitted yet</p>
+        <div className="px-4 pb-4 pt-3 border-t border-subtle text-center">
+          <Bell className="h-6 w-6 text-weak mx-auto mb-1" />
+          <p className="text-sm text-weak">Update not submitted yet</p>
           {isCurrentUser && (
             <Button size="sm" className="mt-2" onClick={onEdit} icon={<Plus className="h-3.5 w-3.5" />}>
               Add my update
@@ -355,22 +355,22 @@ const LiveModePanel: React.FC<{
   const isOvertime = timer > maxSeconds;
 
   return (
-    <div className="bg-white rounded-xl border border-indigo-200 shadow-md p-4">
+    <div className="bg-surface rounded-xl border border-indigo-200 shadow-md p-4">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <div className="h-2 w-2 rounded-full bg-red-500 animate-pulse" />
-          <span className="text-sm font-bold text-slate-800">Live Stand-up</span>
-          <span className="text-xs text-slate-400">
+          <span className="text-sm font-bold text-hi">Live Stand-up</span>
+          <span className="text-xs text-weak">
             {currentMemberIdx + 1}/{session.entries.length}
           </span>
         </div>
-        <div className={cn('font-mono text-lg font-bold', isOvertime ? 'text-red-600' : 'text-slate-800')}>
+        <div className={cn('font-mono text-lg font-bold', isOvertime ? 'text-red-600' : 'text-hi')}>
           {formatSeconds(timer)}
         </div>
       </div>
 
       {/* Progress bar */}
-      <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden mb-3">
+      <div className="h-1.5 bg-inset rounded-full overflow-hidden mb-3">
         <div
           className={cn(
             'h-full rounded-full transition-all duration-1000',
@@ -385,8 +385,8 @@ const LiveModePanel: React.FC<{
           <>
             <Avatar src={currentEntry.user.avatar_url} name={currentEntry.user.full_name} size="sm" />
             <div className="flex-1">
-              <p className="text-sm font-semibold text-slate-800">{currentEntry.user.full_name}</p>
-              <p className="text-xs text-slate-400 capitalize">{currentEntry.user.role?.replace('_', ' ')}</p>
+              <p className="text-sm font-semibold text-hi">{currentEntry.user.full_name}</p>
+              <p className="text-xs text-weak capitalize">{currentEntry.user.role?.replace('_', ' ')}</p>
             </div>
           </>
         )}
@@ -416,11 +416,11 @@ const SummaryPanel: React.FC<{ session: StandupSession }> = ({ session }) => {
   const attendancePct = s.total_members > 0 ? Math.round((s.attendees / s.total_members) * 100) : 0;
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 space-y-4">
+    <div className="bg-surface rounded-xl border border-base shadow-sm p-4 space-y-4">
       <div className="flex items-center gap-2">
         <Sparkles className="h-4 w-4 text-amber-500" />
-        <h3 className="font-semibold text-slate-800 text-sm">Auto-generated Summary</h3>
-        <span className="text-xs text-slate-400 ml-auto">{getSessionDateLabel(session.date)}</span>
+        <h3 className="font-semibold text-hi text-sm">Auto-generated Summary</h3>
+        <span className="text-xs text-weak ml-auto">{getSessionDateLabel(session.date)}</span>
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -430,21 +430,21 @@ const SummaryPanel: React.FC<{ session: StandupSession }> = ({ session }) => {
           { label: 'Blockers', value: s.blockers_count, icon: <ShieldAlert className="h-4 w-4 text-red-500" />, color: 'text-red-700' },
           { label: 'Attendance', value: `${s.attendees}/${s.total_members}`, icon: <Users className="h-4 w-4 text-indigo-500" />, color: 'text-indigo-700' },
         ].map((item) => (
-          <div key={item.label} className="bg-slate-50 rounded-xl p-3 text-center">
+          <div key={item.label} className="bg-inset rounded-xl p-3 text-center">
             <div className="flex items-center justify-center mb-1">{item.icon}</div>
             <p className={cn('text-xl font-bold', item.color)}>{item.value}</p>
-            <p className="text-[10px] text-slate-400">{item.label}</p>
+            <p className="text-[10px] text-weak">{item.label}</p>
           </div>
         ))}
       </div>
 
       {/* Attendance bar */}
       <div>
-        <div className="flex items-center justify-between text-xs text-slate-500 mb-1">
+        <div className="flex items-center justify-between text-xs text-dim mb-1">
           <span>Participation</span>
           <span className="font-medium">{attendancePct}%</span>
         </div>
-        <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+        <div className="h-2 bg-inset rounded-full overflow-hidden">
           <div
             className="h-full bg-linear-to-r from-indigo-500 to-violet-500 rounded-full transition-all"
             style={{ width: `${attendancePct}%` }}
@@ -455,7 +455,7 @@ const SummaryPanel: React.FC<{ session: StandupSession }> = ({ session }) => {
       {s.notes && (
         <div className="bg-amber-50 border border-amber-200 rounded-xl p-3">
           <p className="text-xs font-medium text-amber-700 mb-1">PM Notes</p>
-          <p className="text-sm text-slate-700">{s.notes}</p>
+          <p className="text-sm text-body">{s.notes}</p>
         </div>
       )}
     </div>
@@ -536,7 +536,7 @@ const SubmitEntryModal: React.FC<{
         {/* Yesterday */}
         <div>
           <div className="flex items-center justify-between mb-2">
-            <p className="text-sm font-semibold text-slate-700 flex items-center gap-1.5">
+            <p className="text-sm font-semibold text-body flex items-center gap-1.5">
               <CheckCircle2 className="h-4 w-4 text-green-500" /> What did I do yesterday?
             </p>
             <button type="button" onClick={() => addYesterday({ note: '', task_id: '' })}
@@ -552,7 +552,7 @@ const SubmitEntryModal: React.FC<{
                     <input
                       {...register(`yesterday.${i}.note`)}
                       placeholder="Describe what you completed..."
-                      className="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full text-sm border border-base rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                     {errors.yesterday?.[i]?.note && (
                       <p className="text-[10px] text-red-500 mt-0.5">{errors.yesterday[i]?.note?.message}</p>
@@ -560,14 +560,14 @@ const SubmitEntryModal: React.FC<{
                   </div>
                   <div className="col-span-2">
                     <select {...register(`yesterday.${i}.task_id`)}
-                      className="w-full text-sm border border-slate-200 rounded-lg px-2 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                      className="w-full text-sm border border-base rounded-lg px-2 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-surface">
                       {taskOpts.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
                     </select>
                   </div>
                 </div>
                 {yesterdayFields.length > 1 && (
                   <button type="button" onClick={() => rmYesterday(i)}
-                    className="mt-2 p-1 text-slate-400 hover:text-red-500 transition-colors">
+                    className="mt-2 p-1 text-weak hover:text-red-500 transition-colors">
                     <X className="h-3.5 w-3.5" />
                   </button>
                 )}
@@ -576,12 +576,12 @@ const SubmitEntryModal: React.FC<{
           </div>
         </div>
 
-        <div className="border-t border-slate-100" />
+        <div className="border-t border-subtle" />
 
         {/* Today */}
         <div>
           <div className="flex items-center justify-between mb-2">
-            <p className="text-sm font-semibold text-slate-700 flex items-center gap-1.5">
+            <p className="text-sm font-semibold text-body flex items-center gap-1.5">
               <ArrowRight className="h-4 w-4 text-blue-500" /> What will I do today?
             </p>
             <button type="button" onClick={() => addToday({ note: '', task_id: '' })}
@@ -597,7 +597,7 @@ const SubmitEntryModal: React.FC<{
                     <input
                       {...register(`today.${i}.note`)}
                       placeholder="Describe your plan for today..."
-                      className="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full text-sm border border-base rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                     {errors.today?.[i]?.note && (
                       <p className="text-[10px] text-red-500 mt-0.5">{errors.today[i]?.note?.message}</p>
@@ -605,14 +605,14 @@ const SubmitEntryModal: React.FC<{
                   </div>
                   <div className="col-span-2">
                     <select {...register(`today.${i}.task_id`)}
-                      className="w-full text-sm border border-slate-200 rounded-lg px-2 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                      className="w-full text-sm border border-base rounded-lg px-2 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-surface">
                       {taskOpts.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
                     </select>
                   </div>
                 </div>
                 {todayFields.length > 1 && (
                   <button type="button" onClick={() => rmToday(i)}
-                    className="mt-2 p-1 text-slate-400 hover:text-red-500 transition-colors">
+                    className="mt-2 p-1 text-weak hover:text-red-500 transition-colors">
                     <X className="h-3.5 w-3.5" />
                   </button>
                 )}
@@ -621,12 +621,12 @@ const SubmitEntryModal: React.FC<{
           </div>
         </div>
 
-        <div className="border-t border-slate-100" />
+        <div className="border-t border-subtle" />
 
         {/* Blockers */}
         <div>
           <div className="flex items-center justify-between mb-2">
-            <p className="text-sm font-semibold text-slate-700 flex items-center gap-1.5">
+            <p className="text-sm font-semibold text-body flex items-center gap-1.5">
               <ShieldAlert className="h-4 w-4 text-red-500" /> Any blockers?
             </p>
             <button type="button" onClick={() => addBlocker({ description: '', task_id: '', severity: 'medium', days_blocked: 0 })}
@@ -635,7 +635,7 @@ const SubmitEntryModal: React.FC<{
             </button>
           </div>
           {blockerFields.length === 0 && (
-            <p className="text-xs text-slate-400 italic">No blockers — great!</p>
+            <p className="text-xs text-weak italic">No blockers — great!</p>
           )}
           <div className="space-y-3">
             {blockerFields.map((field, i) => (
@@ -645,31 +645,31 @@ const SubmitEntryModal: React.FC<{
                     <input
                       {...register(`blockers.${i}.description`)}
                       placeholder="Describe the blocker clearly..."
-                      className="w-full text-sm border border-red-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-400 bg-white"
+                      className="w-full text-sm border border-red-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-400 bg-surface"
                     />
                     {errors.blockers?.[i]?.description && (
                       <p className="text-[10px] text-red-500 mt-0.5">{errors.blockers[i]?.description?.message}</p>
                     )}
                   </div>
                   <button type="button" onClick={() => rmBlocker(i)}
-                    className="mt-2 p-1 text-slate-400 hover:text-red-500 transition-colors">
+                    className="mt-2 p-1 text-weak hover:text-red-500 transition-colors">
                     <X className="h-3.5 w-3.5" />
                   </button>
                 </div>
                 <div className="grid grid-cols-3 gap-2">
                   <select {...register(`blockers.${i}.task_id`)}
-                    className="text-sm border border-red-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-red-400 bg-white">
+                    className="text-sm border border-red-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-red-400 bg-surface">
                     {taskOpts.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
                   </select>
                   <select {...register(`blockers.${i}.severity`)}
-                    className="text-sm border border-red-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-red-400 bg-white">
+                    className="text-sm border border-red-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-red-400 bg-surface">
                     <option value="low">Low severity</option>
                     <option value="medium">Medium severity</option>
                     <option value="high">High severity</option>
                   </select>
                   <input {...register(`blockers.${i}.days_blocked`)} type="number" min={0}
                     placeholder="Days blocked"
-                    className="text-sm border border-red-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-red-400 bg-white" />
+                    className="text-sm border border-red-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-red-400 bg-surface" />
                 </div>
               </div>
             ))}
@@ -724,7 +724,7 @@ const CreateSessionModal: React.FC<{
         <Select label="Project" options={projectOptions} error={errors.project_id?.message} {...register('project_id')} />
 
         <div>
-          <p className="text-xs font-medium text-slate-700 mb-2">Mode</p>
+          <p className="text-xs font-medium text-body mb-2">Mode</p>
           <div className="grid grid-cols-2 gap-3">
             {([
               { value: 'async', label: 'Async Mode', desc: 'Team submits updates before the meeting. PM reviews.', icon: <MessageSquare className="h-5 w-5" /> },
@@ -732,12 +732,12 @@ const CreateSessionModal: React.FC<{
             ] as const).map((m) => (
               <label key={m.value} className="relative cursor-pointer">
                 <input type="radio" value={m.value} {...register('mode')} className="sr-only peer" />
-                <div className="p-3 rounded-xl border-2 border-slate-200 peer-checked:border-blue-500 peer-checked:bg-blue-50 transition-all">
+                <div className="p-3 rounded-xl border-2 border-base peer-checked:border-blue-500 peer-checked:bg-blue-50 transition-all">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-slate-500 peer-checked:text-blue-600">{m.icon}</span>
-                    <span className="text-sm font-semibold text-slate-800">{m.label}</span>
+                    <span className="text-dim peer-checked:text-blue-600">{m.icon}</span>
+                    <span className="text-sm font-semibold text-hi">{m.label}</span>
                   </div>
-                  <p className="text-[10px] text-slate-400">{m.desc}</p>
+                  <p className="text-[10px] text-weak">{m.desc}</p>
                 </div>
               </label>
             ))}
@@ -906,11 +906,11 @@ export const DailyScrumPage: React.FC = () => {
       {/* ── Page Header ───────────────────────────────────────────────── */}
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-hi flex items-center gap-2">
             <CalendarClock className="h-6 w-6 text-indigo-500" />
             Daily Stand-up
           </h1>
-          <p className="text-sm text-slate-500 mt-0.5">
+          <p className="text-sm text-dim mt-0.5">
             {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
           </p>
         </div>
@@ -966,12 +966,12 @@ export const DailyScrumPage: React.FC = () => {
 
       {/* ── Today's Session Banner ─────────────────────────────────────── */}
       {todaySession && (
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
+        <div className="bg-surface rounded-xl border border-base shadow-sm p-4">
           <div className="flex flex-col sm:flex-row sm:items-center gap-3">
             <div className="flex items-center gap-3 flex-1">
               <div className={cn(
                 'h-9 w-9 rounded-xl flex items-center justify-center shrink-0',
-                todaySession.status === 'in_progress' ? 'bg-linear-to-br from-indigo-500 to-violet-600' : 'bg-slate-100'
+                todaySession.status === 'in_progress' ? 'bg-linear-to-br from-indigo-500 to-violet-600' : 'bg-inset'
               )}>
                 {todaySession.status === 'in_progress'
                   ? <Play className="h-4.5 w-4.5 text-white" />
@@ -980,14 +980,14 @@ export const DailyScrumPage: React.FC = () => {
               </div>
               <div>
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="font-semibold text-slate-800 text-sm">
+                  <span className="font-semibold text-hi text-sm">
                     {todaySession.mode === 'live' ? 'Live Stand-up' : 'Async Stand-up'}
                   </span>
                   <Badge
                     className={
                       todaySession.status === 'completed' ? 'bg-green-100 text-green-700' :
                       todaySession.status === 'in_progress' ? 'bg-indigo-100 text-indigo-700' :
-                      'bg-slate-100 text-slate-600'
+                      'bg-inset text-dim'
                     }
                     size="sm"
                   >
@@ -995,7 +995,7 @@ export const DailyScrumPage: React.FC = () => {
                      todaySession.status === 'completed' ? 'Completed' : 'Upcoming'}
                   </Badge>
                 </div>
-                <p className="text-[10px] text-slate-400">
+                <p className="text-[10px] text-weak">
                   {submittedCount}/{totalMembers} submitted · {allBlockers.length} active blocker{allBlockers.length !== 1 ? 's' : ''}
                 </p>
               </div>
@@ -1015,7 +1015,7 @@ export const DailyScrumPage: React.FC = () => {
                 </a>
                 <button
                   onClick={() => copyLink(todaySession.meeting_link!)}
-                  className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+                  className="p-1.5 text-weak hover:text-dim hover:bg-inset rounded-lg transition-colors"
                   title="Copy link"
                 >
                   <Copy className="h-3.5 w-3.5" />
@@ -1025,11 +1025,11 @@ export const DailyScrumPage: React.FC = () => {
 
             {/* Participation bar */}
             <div className="w-40">
-              <div className="flex justify-between text-[10px] text-slate-400 mb-1">
+              <div className="flex justify-between text-[10px] text-weak mb-1">
                 <span>Participation</span>
                 <span>{totalMembers > 0 ? Math.round((submittedCount / totalMembers) * 100) : 0}%</span>
               </div>
-              <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+              <div className="h-1.5 bg-inset rounded-full overflow-hidden">
                 <div
                   className="h-full bg-linear-to-r from-indigo-500 to-violet-500 rounded-full transition-all"
                   style={{ width: `${totalMembers > 0 ? (submittedCount / totalMembers) * 100 : 0}%` }}
@@ -1073,10 +1073,10 @@ export const DailyScrumPage: React.FC = () => {
 
       {/* ── No session state ─────────────────────────────────────────────── */}
       {!loadingToday && !todaySession && (
-        <div className="bg-white rounded-xl border-2 border-dashed border-slate-200 p-12 text-center">
-          <CalendarClock className="h-12 w-12 text-slate-300 mx-auto mb-3" />
-          <h3 className="font-semibold text-slate-700 mb-1">No stand-up today</h3>
-          <p className="text-sm text-slate-400 mb-4">Start today's session so your team can submit updates.</p>
+        <div className="bg-surface rounded-xl border-2 border-dashed border-base p-12 text-center">
+          <CalendarClock className="h-12 w-12 text-weak mx-auto mb-3" />
+          <h3 className="font-semibold text-body mb-1">No stand-up today</h3>
+          <p className="text-sm text-weak mb-4">Start today's session so your team can submit updates.</p>
           <Button icon={<Plus className="h-4 w-4" />} onClick={() => setCreateSessionOpen(true)}>
             Start Daily Stand-up
           </Button>
@@ -1111,11 +1111,11 @@ export const DailyScrumPage: React.FC = () => {
                     { label: 'Blockers',  value: allBlockers.length, icon: <ShieldAlert className="h-4 w-4 text-red-500" />, color: 'text-red-700' },
                     { label: 'Tasks Done',value: todaySession.entries.flatMap((e) => e.yesterday).length, icon: <ListChecks className="h-4 w-4 text-blue-500" />, color: 'text-blue-700' },
                   ].map((stat) => (
-                    <div key={stat.label} className="bg-white rounded-xl border border-slate-200 p-3 flex items-center gap-3">
+                    <div key={stat.label} className="bg-surface rounded-xl border border-base p-3 flex items-center gap-3">
                       {stat.icon}
                       <div>
                         <p className={cn('text-lg font-bold', stat.color)}>{stat.value}</p>
-                        <p className="text-[10px] text-slate-400">{stat.label}</p>
+                        <p className="text-[10px] text-weak">{stat.label}</p>
                       </div>
                     </div>
                   ))}
@@ -1123,7 +1123,7 @@ export const DailyScrumPage: React.FC = () => {
 
                 {/* Member cards */}
                 {todaySession.entries.length === 0 ? (
-                  <p className="text-sm text-slate-400 text-center py-5">No team members in this session yet.</p>
+                  <p className="text-sm text-weak text-center py-5">No team members in this session yet.</p>
                 ) : (
                   todaySession.entries.map((entry) => (
                     <MemberEntryCard
@@ -1164,11 +1164,11 @@ export const DailyScrumPage: React.FC = () => {
             {activeTab === 'blockers' && (
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <p className="text-sm font-medium text-slate-600">
+                  <p className="text-sm font-medium text-dim">
                     {allBlockers.filter((b) => !b.resolved).length} active · {allBlockers.filter((b) => b.resolved).length} resolved
                   </p>
                   {isPM && allBlockers.length > 0 && (
-                    <span className="text-[10px] text-slate-400">Click Resolve to clear blockers</span>
+                    <span className="text-[10px] text-weak">Click Resolve to clear blockers</span>
                   )}
                 </div>
 
@@ -1218,10 +1218,10 @@ export const DailyScrumPage: React.FC = () => {
                 {todaySession.status === 'completed' ? (
                   <SummaryPanel session={todaySession} />
                 ) : (
-                  <div className="bg-white rounded-xl border border-slate-200 p-6 text-center">
-                    <BarChart3 className="h-10 w-10 text-slate-300 mx-auto mb-2" />
-                    <p className="font-semibold text-slate-600">Summary available after completion</p>
-                    <p className="text-sm text-slate-400 mt-1">Complete the stand-up to auto-generate a summary.</p>
+                  <div className="bg-surface rounded-xl border border-base p-6 text-center">
+                    <BarChart3 className="h-10 w-10 text-weak mx-auto mb-2" />
+                    <p className="font-semibold text-dim">Summary available after completion</p>
+                    <p className="text-sm text-weak mt-1">Complete the stand-up to auto-generate a summary.</p>
                     {isPM && (
                       <Button size="sm" className="mt-3" onClick={() => setCompleteOpen(true)}
                         icon={<CheckCheck className="h-3.5 w-3.5" />}>
@@ -1237,26 +1237,26 @@ export const DailyScrumPage: React.FC = () => {
             {activeTab === 'history' && (
               <div className="space-y-3">
                 {pastSessions.length === 0 ? (
-                  <div className="text-center py-10 text-slate-400">
+                  <div className="text-center py-10 text-weak">
                     <History className="h-10 w-10 mx-auto mb-2 opacity-30" />
                     <p className="text-sm">No past sessions yet.</p>
                   </div>
                 ) : (
                   pastSessions.map((s) => (
-                    <div key={s.id} className="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
+                    <div key={s.id} className="bg-surface rounded-xl border border-base shadow-sm p-4">
                       <div className="flex items-start justify-between mb-3">
                         <div>
                           <div className="flex items-center gap-2">
-                            <span className="font-semibold text-slate-800 text-sm">{getSessionDateLabel(s.date)}</span>
-                            <Badge className="bg-slate-100 text-slate-600" size="sm">
+                            <span className="font-semibold text-hi text-sm">{getSessionDateLabel(s.date)}</span>
+                            <Badge className="bg-inset text-dim" size="sm">
                               {s.mode === 'live' ? 'Live' : 'Async'}
                             </Badge>
                             <Badge className="bg-green-100 text-green-700" size="sm">Completed</Badge>
                           </div>
-                          <p className="text-[10px] text-slate-400 mt-0.5">{formatDate(s.date)}</p>
+                          <p className="text-[10px] text-weak mt-0.5">{formatDate(s.date)}</p>
                         </div>
                         {s.summary && (
-                          <div className="flex items-center gap-3 text-xs text-slate-500">
+                          <div className="flex items-center gap-3 text-xs text-dim">
                             <span className="flex items-center gap-1">
                               <Users className="h-3 w-3" /> {s.summary.attendees}/{s.summary.total_members}
                             </span>

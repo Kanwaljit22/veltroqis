@@ -62,13 +62,13 @@ export const SettingsPage: React.FC = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-slate-900">Settings</h1>
-        <p className="text-sm text-slate-500 mt-0.5">Manage your workspace preferences and permissions</p>
+        <h1 className="text-2xl font-bold text-hi">Settings</h1>
+        <p className="text-sm text-dim mt-0.5">Manage your workspace preferences and permissions</p>
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-4 gap-4">
         {/* Sidebar Nav */}
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-2 h-fit">
+        <div className="bg-surface rounded-xl border border-base shadow-sm p-2 h-fit">
           {[
             { id: 'notifications', icon: Bell, label: 'Notifications' },
             { id: 'permissions', icon: Shield, label: 'Permissions' },
@@ -82,8 +82,8 @@ export const SettingsPage: React.FC = () => {
               onClick={() => setActiveTab(id)}
               className={`w-full flex items-center justify-between gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                 activeTab === id
-                  ? 'bg-slate-100 text-slate-900'
-                  : 'text-slate-600 hover:bg-slate-50'
+                  ? 'bg-inset text-hi'
+                  : 'text-dim hover:bg-inset'
               }`}
             >
               <div className="flex items-center gap-2.5">
@@ -98,12 +98,12 @@ export const SettingsPage: React.FC = () => {
         {/* Content */}
         <div className="xl:col-span-3 space-y-4">
           {activeTab === 'notifications' && (
-            <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
-              <h3 className="font-semibold text-slate-900 mb-1">Notification Preferences</h3>
-              <p className="text-sm text-slate-500 mb-6">Choose what you want to be notified about</p>
+            <div className="bg-surface rounded-xl border border-base shadow-sm p-6">
+              <h3 className="font-semibold text-hi mb-1">Notification Preferences</h3>
+              <p className="text-sm text-dim mb-6">Choose what you want to be notified about</p>
 
               <div className="space-y-1">
-                <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">In-App Notifications</h4>
+                <h4 className="text-xs font-semibold text-weak uppercase tracking-wider mb-3">In-App Notifications</h4>
                 {[
                   { key: 'task_assigned', label: 'Task assigned to you', desc: 'When a task is assigned to you' },
                   { key: 'status_changed', label: 'Status changes', desc: 'When a task or issue status changes' },
@@ -113,8 +113,8 @@ export const SettingsPage: React.FC = () => {
                 ].map(({ key, label, desc }) => (
                   <div key={key} className="flex items-center justify-between py-3 border-b border-slate-50">
                     <div>
-                      <p className="text-sm font-medium text-slate-800">{label}</p>
-                      <p className="text-xs text-slate-500">{desc}</p>
+                      <p className="text-sm font-medium text-hi">{label}</p>
+                      <p className="text-xs text-dim">{desc}</p>
                     </div>
                     <Checkbox
                       checked={notifications[key as keyof NotificationSettings]}
@@ -126,12 +126,12 @@ export const SettingsPage: React.FC = () => {
                 ))}
               </div>
 
-              <div className="mt-4 pt-4 border-t border-slate-100">
-                <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Email Notifications</h4>
+              <div className="mt-4 pt-4 border-t border-subtle">
+                <h4 className="text-xs font-semibold text-weak uppercase tracking-wider mb-3">Email Notifications</h4>
                 <div className="flex items-center justify-between py-2">
                   <div>
-                    <p className="text-sm font-medium text-slate-800">Email notifications</p>
-                    <p className="text-xs text-slate-500">Receive all notifications via email as well</p>
+                    <p className="text-sm font-medium text-hi">Email notifications</p>
+                    <p className="text-xs text-dim">Receive all notifications via email as well</p>
                   </div>
                   <Checkbox
                     checked={notifications.email_notifications}
@@ -151,25 +151,25 @@ export const SettingsPage: React.FC = () => {
           )}
 
           {activeTab === 'permissions' && (
-            <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+            <div className="bg-surface rounded-xl border border-base shadow-sm p-6">
               <div className="flex items-center gap-2 mb-1">
-                <Users className="h-5 w-5 text-slate-600" />
-                <h3 className="font-semibold text-slate-900">Role-Based Permissions</h3>
+                <Users className="h-5 w-5 text-dim" />
+                <h3 className="font-semibold text-hi">Role-Based Permissions</h3>
               </div>
-              <p className="text-sm text-slate-500 mb-6">Overview of what each role can do</p>
+              <p className="text-sm text-dim mb-6">Overview of what each role can do</p>
 
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="border-b border-slate-100">
-                      <th className="text-left py-2 pr-4 text-xs font-medium text-slate-500 uppercase tracking-wider">
+                    <tr className="border-b border-subtle">
+                      <th className="text-left py-2 pr-4 text-xs font-medium text-dim uppercase tracking-wider">
                         Action
                       </th>
                       {ROLE_ORDER.map((role) => (
                         <th
                           key={role}
                           className={`text-center py-2 px-3 text-xs font-semibold uppercase tracking-wider ${
-                            role === user?.role ? 'text-cyan-600' : 'text-slate-500'
+                            role === user?.role ? 'text-cyan-600' : 'text-dim'
                           }`}
                         >
                           {ROLE_LABELS[role]}
@@ -182,10 +182,10 @@ export const SettingsPage: React.FC = () => {
                       ))}
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-50">
+                  <tbody className="divide-y divide-subtle">
                     {PERMISSION_ORDER.map((permission) => (
-                      <tr key={permission} className="hover:bg-slate-50/50 transition-colors">
-                        <td className="py-3 pr-4 text-sm text-slate-700 font-medium">
+                      <tr key={permission} className="hover:bg-inset/50 transition-colors">
+                        <td className="py-3 pr-4 text-sm text-body font-medium">
                           {PERMISSION_LABELS[permission]}
                         </td>
                         {ROLE_ORDER.map((role) => {
@@ -198,8 +198,8 @@ export const SettingsPage: React.FC = () => {
                                   <Check className={`h-3.5 w-3.5 ${isCurrentRole ? 'text-cyan-600' : 'text-green-500'}`} />
                                 </div>
                               ) : (
-                                <div className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-slate-100 mx-auto">
-                                  <Lock className="h-3 w-3 text-slate-300" />
+                                <div className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-inset mx-auto">
+                                  <Lock className="h-3 w-3 text-weak" />
                                 </div>
                               )}
                             </td>
@@ -212,8 +212,8 @@ export const SettingsPage: React.FC = () => {
               </div>
 
               {/* Role legend */}
-              <div className="mt-5 pt-4 border-t border-slate-100">
-                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
+              <div className="mt-5 pt-4 border-t border-subtle">
+                <p className="text-xs font-semibold text-weak uppercase tracking-wider mb-3">
                   Role Hierarchy
                 </p>
                 <div className="flex flex-wrap gap-2">
@@ -225,7 +225,7 @@ export const SettingsPage: React.FC = () => {
                         className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-medium ${
                           role === user?.role
                             ? 'border-cyan-200 bg-cyan-50 text-cyan-700'
-                            : 'border-slate-200 bg-slate-50 text-slate-600'
+                            : 'border-base bg-inset text-dim'
                         }`}
                       >
                         <span>{ROLE_LABELS[role]}</span>
@@ -247,9 +247,9 @@ export const SettingsPage: React.FC = () => {
           )}
 
           {activeTab === 'localization' && (
-            <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
-              <h3 className="font-semibold text-slate-900 mb-1">Localization</h3>
-              <p className="text-sm text-slate-500 mb-6">Language, timezone, and date formats</p>
+            <div className="bg-surface rounded-xl border border-base shadow-sm p-6">
+              <h3 className="font-semibold text-hi mb-1">Localization</h3>
+              <p className="text-sm text-dim mb-6">Language, timezone, and date formats</p>
 
               <div className="space-y-4">
                 <Select
@@ -299,13 +299,13 @@ export const SettingsPage: React.FC = () => {
           )}
 
           {activeTab === 'appearance' && (
-            <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
-              <h3 className="font-semibold text-slate-900 mb-1">Appearance</h3>
-              <p className="text-sm text-slate-500 mb-6">Customize how Veltroqis looks for you</p>
+            <div className="bg-surface rounded-xl border border-base shadow-sm p-6">
+              <h3 className="font-semibold text-hi mb-1">Appearance</h3>
+              <p className="text-sm text-dim mb-6">Customize how Veltroqis looks for you</p>
 
               <div className="space-y-4">
                 <div>
-                  <p className="text-sm font-medium text-slate-700 mb-3">Color Theme</p>
+                  <p className="text-sm font-medium text-body mb-3">Color Theme</p>
                   <div className="grid grid-cols-3 gap-3">
                     {[
                       { name: 'Default', from: 'from-slate-800', to: 'to-slate-600' },
@@ -314,23 +314,23 @@ export const SettingsPage: React.FC = () => {
                     ].map((theme) => (
                       <button
                         key={theme.name}
-                        className="flex flex-col items-center gap-2 p-3 rounded-xl border-2 border-slate-200 hover:border-slate-400 transition-colors"
+                        className="flex flex-col items-center gap-2 p-3 rounded-xl border-2 border-base hover:border-slate-400 transition-colors"
                       >
                         <div className={`h-8 w-full rounded-lg bg-gradient-to-r ${theme.from} ${theme.to}`} />
-                        <span className="text-xs text-slate-600">{theme.name}</span>
+                        <span className="text-xs text-dim">{theme.name}</span>
                       </button>
                     ))}
                   </div>
                 </div>
 
                 <div>
-                  <p className="text-sm font-medium text-slate-700 mb-3">Mode</p>
+                  <p className="text-sm font-medium text-body mb-3">Mode</p>
                   <div className="grid grid-cols-2 gap-3">
                     {['Light', 'Dark (Coming Soon)'].map((mode) => (
                       <button
                         key={mode}
                         disabled={mode.includes('Coming')}
-                        className="p-3 rounded-xl border-2 border-slate-200 hover:border-slate-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium text-slate-700"
+                        className="p-3 rounded-xl border-2 border-base hover:border-slate-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium text-body"
                       >
                         {mode}
                       </button>
@@ -342,9 +342,9 @@ export const SettingsPage: React.FC = () => {
           )}
 
           {activeTab === 'integrations' && (
-            <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
-              <h3 className="font-semibold text-slate-900 mb-1">Integrations</h3>
-              <p className="text-sm text-slate-500 mb-6">Connect with your favorite tools</p>
+            <div className="bg-surface rounded-xl border border-base shadow-sm p-6">
+              <h3 className="font-semibold text-hi mb-1">Integrations</h3>
+              <p className="text-sm text-dim mb-6">Connect with your favorite tools</p>
 
               <div className="space-y-3">
                 {[
@@ -353,10 +353,10 @@ export const SettingsPage: React.FC = () => {
                   { name: 'Jira', desc: 'Sync issues with Jira', available: false },
                   { name: 'Linear', desc: 'Import issues from Linear', available: false },
                 ].map((integration) => (
-                  <div key={integration.name} className="flex items-center justify-between p-4 rounded-xl border border-slate-200 hover:bg-slate-50 transition-colors">
+                  <div key={integration.name} className="flex items-center justify-between p-4 rounded-xl border border-base hover:bg-inset transition-colors">
                     <div>
-                      <p className="text-sm font-medium text-slate-900">{integration.name}</p>
-                      <p className="text-xs text-slate-500">{integration.desc}</p>
+                      <p className="text-sm font-medium text-hi">{integration.name}</p>
+                      <p className="text-xs text-dim">{integration.desc}</p>
                     </div>
                     <Button
                       variant={integration.available ? 'outline' : 'secondary'}
@@ -372,14 +372,14 @@ export const SettingsPage: React.FC = () => {
           )}
 
           {activeTab === 'api' && (
-            <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
-              <h3 className="font-semibold text-slate-900 mb-1">API Keys</h3>
-              <p className="text-sm text-slate-500 mb-6">Manage API access for external integrations</p>
+            <div className="bg-surface rounded-xl border border-base shadow-sm p-6">
+              <h3 className="font-semibold text-hi mb-1">API Keys</h3>
+              <p className="text-sm text-dim mb-6">Manage API access for external integrations</p>
 
-              <div className="p-4 bg-slate-50 rounded-xl mb-4">
-                <p className="text-xs font-medium text-slate-700 mb-1">Your API Key</p>
+              <div className="p-4 bg-inset rounded-xl mb-4">
+                <p className="text-xs font-medium text-body mb-1">Your API Key</p>
                 <div className="flex items-center gap-2">
-                  <code className="flex-1 text-xs bg-white border border-slate-200 rounded-lg px-3 py-2 font-mono text-slate-600">
+                  <code className="flex-1 text-xs bg-surface border border-base rounded-lg px-3 py-2 font-mono text-dim">
                     vlt_••••••••••••••••••••••••••••••••
                   </code>
                   <Button

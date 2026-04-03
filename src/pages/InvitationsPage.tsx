@@ -38,7 +38,7 @@ const STATUS_CONFIG: Record<
   pending: { label: 'Pending', color: 'bg-yellow-100 text-yellow-700', icon: Clock },
   accepted: { label: 'Accepted', color: 'bg-green-100 text-green-700', icon: CheckCircle },
   expired: { label: 'Expired', color: 'bg-red-100 text-red-700', icon: XCircle },
-  cancelled: { label: 'Cancelled', color: 'bg-slate-100 text-slate-500', icon: XCircle },
+  cancelled: { label: 'Cancelled', color: 'bg-inset text-dim', icon: XCircle },
 };
 
 const ROLE_OPTIONS = [
@@ -105,8 +105,8 @@ export const InvitationsPage: React.FC = () => {
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Invitations</h1>
-          <p className="text-sm text-slate-500 mt-0.5">Manage user invitations and track their status</p>
+          <h1 className="text-2xl font-bold text-hi">Invitations</h1>
+          <p className="text-sm text-dim mt-0.5">Manage user invitations and track their status</p>
         </div>
         <PermissionGuard permission="send_invitations">
           <Button icon={<Send className="h-4 w-4" />} onClick={() => setModalOpen(true)}>
@@ -128,10 +128,10 @@ export const InvitationsPage: React.FC = () => {
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="px-6 py-4 border-b border-slate-100">
-          <h3 className="font-semibold text-slate-900 mb-1">All Invitations</h3>
-          <p className="text-xs text-slate-500 mb-3">View and manage all sent invitations</p>
+      <div className="bg-surface rounded-xl border border-base shadow-sm overflow-hidden">
+        <div className="px-6 py-4 border-b border-subtle">
+          <h3 className="font-semibold text-hi mb-1">All Invitations</h3>
+          <p className="text-xs text-dim mb-3">View and manage all sent invitations</p>
           <Tabs tabs={tabs} activeTab={activeTab} onChange={setActiveTab} />
         </div>
         <div className="overflow-x-auto">
@@ -142,25 +142,25 @@ export const InvitationsPage: React.FC = () => {
           ) : (
             <table className="w-full">
               <thead>
-                <tr className="text-left border-b border-slate-100">
-                  <th className="px-6 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider">Email</th>
-                  <th className="px-6 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider">Role</th>
-                  <th className="px-6 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider">Status</th>
-                  <th className="px-6 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider">Sent</th>
-                  <th className="px-6 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider">Expires</th>
-                  <th className="px-6 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider text-right">Actions</th>
+                <tr className="text-left border-b border-subtle">
+                  <th className="px-6 py-3 text-xs font-medium text-dim uppercase tracking-wider">Email</th>
+                  <th className="px-6 py-3 text-xs font-medium text-dim uppercase tracking-wider">Role</th>
+                  <th className="px-6 py-3 text-xs font-medium text-dim uppercase tracking-wider">Status</th>
+                  <th className="px-6 py-3 text-xs font-medium text-dim uppercase tracking-wider">Sent</th>
+                  <th className="px-6 py-3 text-xs font-medium text-dim uppercase tracking-wider">Expires</th>
+                  <th className="px-6 py-3 text-xs font-medium text-dim uppercase tracking-wider text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-50">
+              <tbody className="divide-y divide-subtle">
                 {filtered.map((inv) => {
                   const statusConfig = STATUS_CONFIG[inv.status];
                   const StatusIcon = statusConfig.icon;
                   return (
-                    <tr key={inv.id} className="hover:bg-slate-50/50 transition-colors">
+                    <tr key={inv.id} className="hover:bg-inset/50 transition-colors">
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2">
-                          <Mail className="h-4 w-4 text-slate-400" />
-                          <span className="text-sm text-slate-700">{inv.email}</span>
+                          <Mail className="h-4 w-4 text-weak" />
+                          <span className="text-sm text-body">{inv.email}</span>
                         </div>
                       </td>
                       <td className="px-6 py-4">
@@ -172,14 +172,14 @@ export const InvitationsPage: React.FC = () => {
                           {statusConfig.label}
                         </Badge>
                       </td>
-                      <td className="px-6 py-4 text-sm text-slate-500">{formatDateShort(inv.sent_at)}</td>
-                      <td className="px-6 py-4 text-sm text-slate-500">{formatDateShort(inv.expires_at)}</td>
+                      <td className="px-6 py-4 text-sm text-dim">{formatDateShort(inv.sent_at)}</td>
+                      <td className="px-6 py-4 text-sm text-dim">{formatDateShort(inv.expires_at)}</td>
                       <td className="px-6 py-4">
                         <div className="flex items-center justify-end gap-1">
                           <button
                             onClick={() => handleCopyLink(inv)}
                             title="Copy invite link"
-                            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
+                            className="p-1.5 rounded-lg text-weak hover:text-dim hover:bg-inset transition-colors"
                           >
                             <Copy className="h-3.5 w-3.5" />
                           </button>
@@ -187,7 +187,7 @@ export const InvitationsPage: React.FC = () => {
                             <button
                               onClick={() => resendInvitation.mutate(inv.id)}
                               title="Resend invitation"
-                              className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                              className="p-1.5 rounded-lg text-weak hover:text-blue-600 hover:bg-blue-50 transition-colors"
                             >
                               <RotateCcw className="h-3.5 w-3.5" />
                             </button>
@@ -196,7 +196,7 @@ export const InvitationsPage: React.FC = () => {
                             <button
                               onClick={() => revokeInvitation.mutate(inv.id)}
                               title="Revoke invitation"
-                              className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                              className="p-1.5 rounded-lg text-weak hover:text-red-600 hover:bg-red-50 transition-colors"
                             >
                               <Trash2 className="h-3.5 w-3.5" />
                             </button>
@@ -208,7 +208,7 @@ export const InvitationsPage: React.FC = () => {
                 })}
                 {filtered.length === 0 && (
                   <tr>
-                    <td colSpan={6} className="px-6 py-12 text-center text-sm text-slate-400">
+                    <td colSpan={6} className="px-6 py-12 text-center text-sm text-weak">
                       No invitations found
                     </td>
                   </tr>

@@ -60,7 +60,7 @@ export const EllipsisTooltip: React.FC<EllipsisTooltipProps> = ({
           side="top"
           sideOffset={6}
           className={cn(
-            'z-200 max-w-xs rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-700 shadow-md',
+            'z-200 max-w-xs rounded-lg border border-base bg-surface px-3 py-2 text-xs text-body shadow-md',
             'whitespace-pre-wrap wrap-break-word select-none'
           )}
         >

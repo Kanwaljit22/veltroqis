@@ -57,18 +57,18 @@ const ToastItem: React.FC<{ toast: ToastMessage; onRemove: (id: string) => void 
   return (
     <div
       className={cn(
-        'flex items-start gap-3 bg-white rounded-xl shadow-lg p-4 min-w-[300px] max-w-sm animate-fade-in',
+        'flex items-start gap-3 bg-surface rounded-xl shadow-lg p-4 min-w-[300px] max-w-sm animate-fade-in',
         config.border
       )}
     >
       <div className="flex-shrink-0 mt-0.5">{config.icon}</div>
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold text-slate-900">{t.title}</p>
-        {t.message && <p className="mt-0.5 text-xs text-slate-500">{t.message}</p>}
+        <p className="text-sm font-semibold text-hi">{t.title}</p>
+        {t.message && <p className="mt-0.5 text-xs text-dim">{t.message}</p>}
       </div>
       <button
         onClick={() => onRemove(t.id)}
-        className="flex-shrink-0 text-slate-400 hover:text-slate-600 transition-colors"
+        className="flex-shrink-0 text-weak hover:text-dim transition-colors"
       >
         <X className="h-4 w-4" />
       </button>

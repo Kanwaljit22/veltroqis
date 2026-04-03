@@ -18,7 +18,7 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
         {label && (
           <label
             htmlFor={inputId}
-            className="block text-sm font-medium text-slate-700 mb-1.5"
+            className="block text-sm font-medium text-body mb-1.5"
           >
             {label}
           </label>
@@ -28,13 +28,13 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
             ref={ref}
             id={inputId}
             className={cn(
-              'w-full h-10 rounded-lg border bg-white px-3 pr-10 text-sm text-slate-900 appearance-none',
+              'w-full h-10 rounded-lg border bg-surface px-3 pr-10 text-sm text-hi appearance-none',
               'transition-colors duration-150 cursor-pointer',
-              'focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent',
+              'focus:outline-none focus:ring-2 focus:ring-hi focus:border-transparent',
               error
                 ? 'border-red-400 focus:ring-red-400'
-                : 'border-slate-200 hover:border-slate-300',
-              !props.value && 'text-slate-400',
+                : 'border-base hover:border-base',
+              !props.value && 'text-weak',
               className
             )}
             {...props}
@@ -50,10 +50,10 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
               </option>
             ))}
           </select>
-          <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
+          <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-weak pointer-events-none" />
         </div>
         {error && <p className="mt-1.5 text-xs text-red-600">{error}</p>}
-        {hint && !error && <p className="mt-1.5 text-xs text-slate-500">{hint}</p>}
+        {hint && !error && <p className="mt-1.5 text-xs text-dim">{hint}</p>}
       </div>
     );
   }

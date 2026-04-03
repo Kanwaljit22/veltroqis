@@ -137,8 +137,8 @@ export const IssueTrackerPage: React.FC = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl font-bold text-slate-900">Issue Tracker</h1>
-          <p className="text-xs text-slate-500 mt-0.5">Track bugs, features, and improvements</p>
+          <h1 className="text-xl font-bold text-hi">Issue Tracker</h1>
+          <p className="text-xs text-dim mt-0.5">Track bugs, features, and improvements</p>
         </div>
         <Button icon={<Plus className="h-4 w-4" />} onClick={() => setCreateModalOpen(true)}>
           New Issue
@@ -147,10 +147,10 @@ export const IssueTrackerPage: React.FC = () => {
 
 
       {/* Table + Filters — unified panel */}
-      <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
+      <div className="bg-surface rounded-xl border border-subtle shadow-sm overflow-hidden">
 
         {/* Toolbar */}
-        <div className="flex flex-col gap-2 px-4 py-3 border-b border-slate-100">
+        <div className="flex flex-col gap-2 px-4 py-3 border-b border-subtle">
           <div className="flex items-center justify-between gap-3">
             {/* Status tabs */}
             <Tabs tabs={tabs} activeTab={statusTab} onChange={setStatusTab} />
@@ -159,13 +159,13 @@ export const IssueTrackerPage: React.FC = () => {
             <div className="flex items-center gap-2 shrink-0">
               {/* Search */}
               <div className="relative">
-                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 pointer-events-none" />
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-weak pointer-events-none" />
                 <input
                   type="text"
                   placeholder="Search issues..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="h-8 w-48 bg-slate-50 border border-slate-200 rounded-lg pl-8 pr-3 text-xs text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-300 transition-all"
+                  className="h-8 w-48 bg-inset border border-base rounded-lg pl-8 pr-3 text-xs text-body placeholder:text-weak focus:outline-none focus:ring-2 focus:ring-hi/10 focus:border-slate-300 transition-all"
                 />
               </div>
 
@@ -174,12 +174,12 @@ export const IssueTrackerPage: React.FC = () => {
                 <select
                   value={typeFilter}
                   onChange={(e) => setTypeFilter(e.target.value)}
-                  className="h-8 appearance-none bg-slate-50 border border-slate-200 rounded-lg pl-3 pr-7 text-xs text-slate-600 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-300 cursor-pointer transition-all"
+                  className="h-8 appearance-none bg-inset border border-base rounded-lg pl-3 pr-7 text-xs text-dim focus:outline-none focus:ring-2 focus:ring-hi/10 focus:border-slate-300 cursor-pointer transition-all"
                 >
                   <option value="">All Types</option>
                   {TYPE_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
                 </select>
-                <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-400 pointer-events-none" />
+                <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-weak pointer-events-none" />
               </div>
 
               {/* Severity */}
@@ -187,19 +187,19 @@ export const IssueTrackerPage: React.FC = () => {
                 <select
                   value={severityFilter}
                   onChange={(e) => setSeverityFilter(e.target.value)}
-                  className="h-8 appearance-none bg-slate-50 border border-slate-200 rounded-lg pl-3 pr-7 text-xs text-slate-600 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-300 cursor-pointer transition-all"
+                  className="h-8 appearance-none bg-inset border border-base rounded-lg pl-3 pr-7 text-xs text-dim focus:outline-none focus:ring-2 focus:ring-hi/10 focus:border-slate-300 cursor-pointer transition-all"
                 >
                   <option value="">All Severities</option>
                   {SEVERITY_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
                 </select>
-                <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-400 pointer-events-none" />
+                <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-weak pointer-events-none" />
               </div>
 
               {/* Active filter count pill */}
               {(search || typeFilter || severityFilter) && (
                 <button
                   onClick={() => { setSearch(''); setTypeFilter(''); setSeverityFilter(''); }}
-                  className="h-8 px-2.5 text-xs font-medium text-slate-500 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors flex items-center gap-1.5"
+                  className="h-8 px-2.5 text-xs font-medium text-dim bg-inset hover:bg-slate-200 rounded-lg transition-colors flex items-center gap-1.5"
                 >
                   <Filter className="h-3 w-3" />
                   Clear
@@ -218,26 +218,26 @@ export const IssueTrackerPage: React.FC = () => {
           ) : (
             <table className="w-full">
               <thead>
-                <tr className="text-left border-b border-slate-100 bg-slate-50/50">
-                  <th className="px-4 py-2.5 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Issue</th>
-                  <th className="px-4 py-2.5 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Type</th>
-                  <th className="px-4 py-2.5 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Severity</th>
-                  <th className="px-4 py-2.5 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Status</th>
-                  <th className="px-4 py-2.5 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Reporter</th>
-                  <th className="px-4 py-2.5 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Created</th>
-                  <th className="px-4 py-2.5 text-[11px] font-semibold text-slate-400 uppercase tracking-wider text-right">Actions</th>
+                <tr className="text-left border-b border-subtle bg-inset/50">
+                  <th className="px-4 py-2.5 text-[11px] font-semibold text-weak uppercase tracking-wider">Issue</th>
+                  <th className="px-4 py-2.5 text-[11px] font-semibold text-weak uppercase tracking-wider">Type</th>
+                  <th className="px-4 py-2.5 text-[11px] font-semibold text-weak uppercase tracking-wider">Severity</th>
+                  <th className="px-4 py-2.5 text-[11px] font-semibold text-weak uppercase tracking-wider">Status</th>
+                  <th className="px-4 py-2.5 text-[11px] font-semibold text-weak uppercase tracking-wider">Reporter</th>
+                  <th className="px-4 py-2.5 text-[11px] font-semibold text-weak uppercase tracking-wider">Created</th>
+                  <th className="px-4 py-2.5 text-[11px] font-semibold text-weak uppercase tracking-wider text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-50">
+              <tbody className="divide-y divide-subtle">
                 {filtered.map((issue) => (
-                  <tr key={issue.id} className="hover:bg-slate-50/50 transition-colors group">
+                  <tr key={issue.id} className="hover:bg-inset/50 transition-colors group">
                     <td className="px-4 py-3 max-w-xs">
-                      <p className="text-sm font-medium text-slate-900 truncate leading-snug">{issue.title}</p>
+                      <p className="text-sm font-medium text-hi truncate leading-snug">{issue.title}</p>
                       {issue.description && (
-                        <p className="text-xs text-slate-400 truncate mt-0.5 leading-snug">{issue.description}</p>
+                        <p className="text-xs text-weak truncate mt-0.5 leading-snug">{issue.description}</p>
                       )}
                       {!!issue.comment_count && (
-                        <span className="inline-flex items-center gap-0.5 text-[11px] text-slate-400 mt-1">
+                        <span className="inline-flex items-center gap-0.5 text-[11px] text-weak mt-1">
                           <MessageSquare className="h-3 w-3" />{issue.comment_count}
                         </span>
                       )}
@@ -255,15 +255,15 @@ export const IssueTrackerPage: React.FC = () => {
                       {issue.reporter && (
                         <div className="flex items-center gap-2">
                           <Avatar src={issue.reporter.avatar_url} name={issue.reporter.full_name} size="xs" />
-                          <span className="text-xs text-slate-600 truncate max-w-[100px]">{issue.reporter.full_name}</span>
+                          <span className="text-xs text-dim truncate max-w-[100px]">{issue.reporter.full_name}</span>
                         </div>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-xs text-slate-400 whitespace-nowrap">{formatTimeAgo(issue.created_at)}</td>
+                    <td className="px-4 py-3 text-xs text-weak whitespace-nowrap">{formatTimeAgo(issue.created_at)}</td>
                     <td className="px-4 py-3 text-right">
                       <Dropdown
                         trigger={
-                          <button className="p-1 rounded-lg text-slate-300 hover:text-slate-600 hover:bg-slate-100 transition-colors opacity-0 group-hover:opacity-100">
+                          <button className="p-1 rounded-lg text-weak hover:text-dim hover:bg-inset transition-colors opacity-0 group-hover:opacity-100">
                             <MoreHorizontal className="h-4 w-4" />
                           </button>
                         }
@@ -284,11 +284,11 @@ export const IssueTrackerPage: React.FC = () => {
                   <tr>
                     <td colSpan={7} className="px-6 py-10 text-center">
                       <div className="flex flex-col items-center gap-2">
-                        <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center">
-                          <Filter className="h-5 w-5 text-slate-300" />
+                        <div className="w-10 h-10 rounded-full bg-inset flex items-center justify-center">
+                          <Filter className="h-5 w-5 text-weak" />
                         </div>
-                        <p className="text-sm font-medium text-slate-500">No issues found</p>
-                        <p className="text-xs text-slate-400">Try adjusting your filters</p>
+                        <p className="text-sm font-medium text-dim">No issues found</p>
+                        <p className="text-xs text-weak">Try adjusting your filters</p>
                       </div>
                     </td>
                   </tr>
@@ -309,35 +309,35 @@ export const IssueTrackerPage: React.FC = () => {
         {viewIssue && (
           <div className="space-y-4">
             {viewIssue.description && (
-              <p className="text-sm text-slate-600">{viewIssue.description}</p>
+              <p className="text-sm text-dim">{viewIssue.description}</p>
             )}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <p className="text-xs text-slate-400 mb-1">Type</p>
+                <p className="text-xs text-weak mb-1">Type</p>
                 <Badge className={ISSUE_TYPE_COLORS[viewIssue.type]}>{ISSUE_TYPE_LABELS[viewIssue.type]}</Badge>
               </div>
               <div>
-                <p className="text-xs text-slate-400 mb-1">Severity</p>
+                <p className="text-xs text-weak mb-1">Severity</p>
                 <Badge className={SEVERITY_COLORS[viewIssue.severity]}>{SEVERITY_LABELS[viewIssue.severity]}</Badge>
               </div>
               <div>
-                <p className="text-xs text-slate-400 mb-1">Status</p>
+                <p className="text-xs text-weak mb-1">Status</p>
                 <Badge className={ISSUE_STATUS_COLORS[viewIssue.status]}>{ISSUE_STATUS_LABELS[viewIssue.status]}</Badge>
               </div>
               {viewIssue.reporter && (
                 <div>
-                  <p className="text-xs text-slate-400 mb-1">Reporter</p>
+                  <p className="text-xs text-weak mb-1">Reporter</p>
                   <div className="flex items-center gap-2">
                     <Avatar src={viewIssue.reporter.avatar_url} name={viewIssue.reporter.full_name} size="xs" />
-                    <span className="text-sm text-slate-700">{viewIssue.reporter.full_name}</span>
+                    <span className="text-sm text-body">{viewIssue.reporter.full_name}</span>
                   </div>
                 </div>
               )}
             </div>
             {viewIssue.steps_to_reproduce && (
               <div>
-                <p className="text-xs text-slate-400 mb-1">Steps to Reproduce</p>
-                <p className="text-sm text-slate-600 bg-slate-50 rounded-lg p-3 whitespace-pre-wrap">
+                <p className="text-xs text-weak mb-1">Steps to Reproduce</p>
+                <p className="text-sm text-dim bg-inset rounded-lg p-3 whitespace-pre-wrap">
                   {viewIssue.steps_to_reproduce}
                 </p>
               </div>

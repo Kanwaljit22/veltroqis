@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useLayoutEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AppLayout } from './components/layout/AppLayout';
@@ -21,6 +21,15 @@ import { IssueTrackerPage } from './pages/IssueTrackerPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { LandingPage } from './pages/LandingPage';
 import { useAuthStore } from './store/authStore';
+import { useThemeStore, syncDocumentTheme } from './store/themeStore';
+
+function ThemeSync() {
+  const colorMode = useThemeStore((s) => s.colorMode);
+  useLayoutEffect(() => {
+    syncDocumentTheme(colorMode);
+  }, [colorMode]);
+  return null;
+}
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -131,6 +140,7 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
+        <ThemeSync />
         <AppContent />
       </BrowserRouter>
     </QueryClientProvider>

@@ -1,12 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Bell, Search, LogOut, User, Settings, ChevronDown, CheckCheck, Zap,
+  Bell, Search, LogOut, User, Settings, ChevronDown, CheckCheck, Zap, Moon, Sun,
 } from 'lucide-react';
 import { cn, formatTimeAgo } from '../../lib/utils';
 import { Avatar } from '../ui/Avatar';
 import { useAuthStore } from '../../store/authStore';
 import { useAppStore } from '../../store/appStore';
+import { useThemeStore } from '../../store/themeStore';
 import { useNotifications } from '../../hooks/useDashboard';
 import { supabase } from '../../lib/supabase';
 import { useQueryClient } from '@tanstack/react-query';
@@ -15,6 +16,7 @@ import { QUERY_KEYS } from '../../lib/queryKeys';
 export const Navbar: React.FC = () => {
   const { user, signOut } = useAuthStore();
   const { sidebarOpen, globalSearch, setGlobalSearch } = useAppStore();
+  const { colorMode, toggleColorMode } = useThemeStore();
   const navigate = useNavigate();
   const qc = useQueryClient();
 
@@ -120,46 +122,56 @@ export const Navbar: React.FC = () => {
   return (
     <header
       className={cn(
-        'fixed top-0 right-0 h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 z-30 transition-all duration-300',
+        'fixed top-0 right-0 h-16 bg-white dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-6 z-30 transition-all duration-300',
         sidebarOpen ? 'left-60' : 'left-16'
       )}
     >
       <div className="flex items-center gap-2 lg:hidden">
         <Zap className="h-5 w-5 text-cyan-500" />
-        <span className="font-bold text-sm">VELTROQIS</span>
+        <span className="font-bold text-sm text-slate-900 dark:text-slate-100">VELTROQIS</span>
       </div>
 
       {/* Search */}
       <div className="hidden sm:flex items-center gap-2 flex-1 max-w-md">
         <div className="relative w-full">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 dark:text-slate-500" />
           <input
             type="text"
             placeholder="Search tasks, projects, users..."
             value={globalSearch}
             onChange={(e) => setGlobalSearch(e.target.value)}
-            className="w-full h-9 bg-slate-50 border border-slate-200 rounded-lg pl-10 pr-4 text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-all"
+            className="w-full h-9 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg pl-10 pr-4 text-sm text-slate-700 dark:text-slate-200 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-900 dark:focus:ring-slate-100 focus:border-transparent transition-all"
           />
         </div>
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1 sm:gap-2">
+        {/* Theme toggle */}
+        <button
+          type="button"
+          onClick={toggleColorMode}
+          className="p-2 rounded-xl text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+          aria-label={colorMode === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+        >
+          {colorMode === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+        </button>
+
         {/* Notifications */}
         <div className="relative" ref={notifRef}>
           <button
             onClick={() => setNotifOpen((o) => !o)}
-            className="relative p-2 rounded-xl text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+            className="relative p-2 rounded-xl text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
           >
             <Bell className="h-5 w-5" />
             {unreadCount > 0 && (
-              <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-red-500 ring-2 ring-white" />
+              <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-red-500 ring-2 ring-white dark:ring-slate-950" />
             )}
           </button>
 
           {notifOpen && (
-            <div className="absolute right-0 top-full mt-2 w-80 bg-white rounded-xl border border-slate-200 shadow-xl z-50 animate-fade-in">
-              <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100">
-                <h3 className="font-semibold text-sm text-slate-900">
+            <div className="absolute right-0 top-full mt-2 w-80 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 shadow-xl z-50 animate-fade-in">
+              <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 dark:border-slate-800">
+                <h3 className="font-semibold text-sm text-slate-900 dark:text-slate-100">
                   Notifications
                   {unreadCount > 0 && (
                     <span className="ml-2 bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full">
@@ -170,16 +182,16 @@ export const Navbar: React.FC = () => {
                 {unreadCount > 0 && (
                   <button
                     onClick={markAllRead}
-                    className="flex items-center gap-1 text-xs text-slate-500 hover:text-slate-900 transition-colors"
+                    className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition-colors"
                   >
                     <CheckCheck className="h-3.5 w-3.5" />
                     Mark all read
                   </button>
                 )}
               </div>
-              <div className="max-h-80 overflow-y-auto divide-y divide-slate-50">
+              <div className="max-h-80 overflow-y-auto divide-y divide-slate-50 dark:divide-slate-800">
                 {notifications.length === 0 ? (
-                  <div className="py-8 text-center text-sm text-slate-400">No notifications</div>
+                  <div className="py-8 text-center text-sm text-slate-400 dark:text-slate-500">No notifications</div>
                 ) : (
                   (notifications as unknown as NotifRow[]).map((n) => (
                     <div
@@ -194,15 +206,15 @@ export const Navbar: React.FC = () => {
                         }
                       }}
                       className={cn(
-                        'flex gap-3 px-4 py-3 cursor-pointer transition-colors hover:bg-slate-50 text-left w-full',
-                        !n.read && 'bg-blue-50/50'
+                        'flex gap-3 px-4 py-3 cursor-pointer transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/80 text-left w-full',
+                        !n.read && 'bg-blue-50/50 dark:bg-blue-950/40'
                       )}
                     >
                       <Avatar src={n.actor?.avatar_url ?? undefined} name={n.actor?.full_name || 'Admin'} size="sm" />
                       <div className="flex-1 min-w-0">
-                        <p className="text-xs font-semibold text-slate-900 leading-snug">{n.title}</p>
-                        <p className="text-xs text-slate-600 mt-0.5 leading-snug">{n.message}</p>
-                        <p className="mt-1 text-xs text-slate-400">{formatTimeAgo(n.created_at)}</p>
+                        <p className="text-xs font-semibold text-slate-900 dark:text-slate-100 leading-snug">{n.title}</p>
+                        <p className="text-xs text-slate-600 dark:text-slate-300 mt-0.5 leading-snug">{n.message}</p>
+                        <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">{formatTimeAgo(n.created_at)}</p>
                       </div>
                       {!n.read && (
                         <div className="shrink-0 h-2 w-2 rounded-full bg-blue-500 mt-1.5" aria-hidden />
@@ -219,35 +231,35 @@ export const Navbar: React.FC = () => {
         <div className="relative" ref={profileRef}>
           <button
             onClick={() => setProfileOpen((o) => !o)}
-            className="flex items-center gap-2 pl-1 pr-2 py-1 rounded-xl hover:bg-slate-100 transition-colors"
+            className="flex items-center gap-2 pl-1 pr-2 py-1 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
           >
             <Avatar src={user?.avatar_url} name={user?.full_name || 'User'} size="sm" />
-            <ChevronDown className="h-3.5 w-3.5 text-slate-400 hidden sm:block" />
+            <ChevronDown className="h-3.5 w-3.5 text-slate-400 dark:text-slate-500 hidden sm:block" />
           </button>
 
           {profileOpen && (
-            <div className="absolute right-0 top-full mt-2 w-52 bg-white rounded-xl border border-slate-200 shadow-xl z-50 animate-fade-in">
-              <div className="px-4 py-3 border-b border-slate-100">
-                <p className="text-sm font-semibold text-slate-900 truncate">{user?.full_name || 'User'}</p>
-                <p className="text-xs text-slate-500 truncate">{user?.email}</p>
+            <div className="absolute right-0 top-full mt-2 w-52 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 shadow-xl z-50 animate-fade-in">
+              <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-800">
+                <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate">{user?.full_name || 'User'}</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{user?.email}</p>
               </div>
               <div className="py-1">
                 <button
                   onClick={() => { navigate('/profile'); setProfileOpen(false); }}
-                  className="flex w-full items-center gap-2.5 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
+                  className="flex w-full items-center gap-2.5 px-4 py-2.5 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
                 >
                   <User className="h-4 w-4" />Profile
                 </button>
                 <button
                   onClick={() => { navigate('/settings'); setProfileOpen(false); }}
-                  className="flex w-full items-center gap-2.5 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
+                  className="flex w-full items-center gap-2.5 px-4 py-2.5 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
                 >
                   <Settings className="h-4 w-4" />Settings
                 </button>
-                <div className="border-t border-slate-100 mt-1 pt-1">
+                <div className="border-t border-slate-100 dark:border-slate-800 mt-1 pt-1">
                   <button
                     onClick={handleSignOut}
-                    className="flex w-full items-center gap-2.5 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                    className="flex w-full items-center gap-2.5 px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/50 transition-colors"
                   >
                     <LogOut className="h-4 w-4" />Sign out
                   </button>

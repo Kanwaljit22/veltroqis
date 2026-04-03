@@ -54,7 +54,7 @@ export const MultiUserSelect: React.FC<MultiUserSelectProps> = ({
   return (
     <div className="w-full relative" ref={ref}>
       {label && (
-        <label htmlFor={inputId} className="block text-sm font-medium text-slate-700 mb-1.5">
+        <label htmlFor={inputId} className="block text-sm font-medium text-body mb-1.5">
           {label}
         </label>
       )}
@@ -73,28 +73,28 @@ export const MultiUserSelect: React.FC<MultiUserSelectProps> = ({
           if (e.key === 'Escape') setOpen(false);
         }}
         className={cn(
-          'w-full min-h-10 rounded-lg border bg-white px-3 py-2 text-left text-sm transition-colors',
+          'w-full min-h-10 rounded-lg border bg-surface px-3 py-2 text-left text-sm transition-colors',
           'inline-flex items-start justify-between gap-2',
-          'focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent',
-          error ? 'border-red-400 focus:ring-red-400' : 'border-slate-200 hover:border-slate-300',
+          'focus:outline-none focus:ring-2 focus:ring-hi focus:border-transparent',
+          error ? 'border-red-400 focus:ring-red-400' : 'border-base hover:border-base',
           disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
         )}
       >
         <div className="flex flex-wrap gap-1.5 flex-1 min-w-0 pt-0.5">
           {value.length === 0 ? (
-            <span className="text-slate-400">{placeholder}</span>
+            <span className="text-weak">{placeholder}</span>
           ) : (
             value.map((uid) => (
               <span
                 key={uid}
-                className="inline-flex items-center gap-0.5 max-w-full pl-2 pr-1 py-0.5 rounded-md bg-slate-100 text-slate-800 text-xs font-medium"
+                className="inline-flex items-center gap-0.5 max-w-full pl-2 pr-1 py-0.5 rounded-md bg-inset text-hi text-xs font-medium"
               >
                 <span className="truncate">{labelById[uid] ?? uid.slice(0, 8)}</span>
                 {!disabled && (
                   <button
                     type="button"
                     onClick={(e) => removeChip(uid, e)}
-                    className="p-0.5 rounded hover:bg-slate-200 text-slate-500 shrink-0"
+                    className="p-0.5 rounded hover:bg-slate-200 text-dim shrink-0"
                     aria-label={`Remove ${labelById[uid]}`}
                   >
                     <X className="h-3 w-3" />
@@ -105,24 +105,24 @@ export const MultiUserSelect: React.FC<MultiUserSelectProps> = ({
           )}
         </div>
         <ChevronDown
-          className={cn('h-4 w-4 text-slate-400 shrink-0 mt-1 transition-transform', open && 'rotate-180')}
+          className={cn('h-4 w-4 text-weak shrink-0 mt-1 transition-transform', open && 'rotate-180')}
         />
       </div>
 
       {open && !disabled && (
         <div
           className={cn(
-            'absolute z-50 mt-1 w-[min(100%,320px)] max-h-56 overflow-y-auto rounded-xl border border-slate-200',
-            'bg-white py-1 shadow-lg'
+            'absolute z-50 mt-1 w-[min(100%,320px)] max-h-56 overflow-y-auto rounded-xl border border-base',
+            'bg-surface py-1 shadow-lg'
           )}
         >
           {options.length === 0 ? (
-            <p className="px-3 py-2 text-sm text-slate-400">No users available</p>
+            <p className="px-3 py-2 text-sm text-weak">No users available</p>
           ) : (
             options.map((opt) => (
               <div
                 key={opt.value}
-                className="px-3 py-2 hover:bg-slate-50"
+                className="px-3 py-2 hover:bg-inset"
                 onMouseDown={(e) => e.preventDefault()}
               >
                 <Checkbox
@@ -138,7 +138,7 @@ export const MultiUserSelect: React.FC<MultiUserSelectProps> = ({
       )}
 
       {error && <p className="mt-1.5 text-xs text-red-600">{error}</p>}
-      {hint && !error && <p className="mt-1.5 text-xs text-slate-500">{hint}</p>}
+      {hint && !error && <p className="mt-1.5 text-xs text-dim">{hint}</p>}
     </div>
   );
 };

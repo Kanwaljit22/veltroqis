@@ -133,8 +133,8 @@ export const ProjectsPage: React.FC = () => {
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Projects</h1>
-          <p className="text-sm text-slate-500 mt-0.5">Manage and track all your projects</p>
+          <h1 className="text-2xl font-bold text-hi">Projects</h1>
+          <p className="text-sm text-dim mt-0.5">Manage and track all your projects</p>
         </div>
         <PermissionGuard permission="create_projects">
           <Button icon={<Plus className="h-4 w-4" />} onClick={openCreate}>
@@ -150,7 +150,7 @@ export const ProjectsPage: React.FC = () => {
           Admin view — showing all {projects.length} project{projects.length !== 1 ? 's' : ''} across the workspace
         </div>
       ) : (
-        <div className="flex items-center gap-2.5 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-600 w-fit">
+        <div className="flex items-center gap-2.5 px-4 py-2.5 bg-inset border border-base rounded-xl text-xs font-medium text-dim w-fit">
           <Lock className="h-3.5 w-3.5 shrink-0" />
           Showing {projects.length} project{projects.length !== 1 ? 's' : ''} you&apos;re assigned to
         </div>
@@ -180,10 +180,10 @@ export const ProjectsPage: React.FC = () => {
         {isLoading ? (
           Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)
         ) : filtered.length === 0 ? (
-          <div className="col-span-full bg-white rounded-xl border border-slate-200 shadow-sm p-12 text-center">
-            <FolderKanban className="h-12 w-12 text-slate-300 mx-auto mb-3" />
-            <p className="text-slate-500 font-medium">No projects found</p>
-            <p className="text-sm text-slate-400 mt-1">
+          <div className="col-span-full bg-surface rounded-xl border border-base shadow-sm p-12 text-center">
+            <FolderKanban className="h-12 w-12 text-weak mx-auto mb-3" />
+            <p className="text-dim font-medium">No projects found</p>
+            <p className="text-sm text-weak mt-1">
               {search || statusFilter ? 'Try adjusting your filters' : 'Create your first project'}
             </p>
           </div>
@@ -195,7 +195,7 @@ export const ProjectsPage: React.FC = () => {
             return (
               <div
                 key={project.id}
-                className="bg-white rounded-xl border border-slate-200 shadow-sm p-5 hover:shadow-md transition-shadow"
+                className="bg-surface rounded-xl border border-base shadow-sm p-5 hover:shadow-md transition-shadow"
               >
                 <div className="flex items-start justify-between gap-2 mb-3">
                   <div className="flex items-center gap-3">
@@ -203,7 +203,7 @@ export const ProjectsPage: React.FC = () => {
                       <FolderKanban className="h-5 w-5 text-white" />
                     </div>
                     <div className="min-w-0">
-                      <h3 className="text-base font-semibold text-slate-900 m-0 min-w-0">
+                      <h3 className="text-base font-semibold text-hi m-0 min-w-0">
                         <Link
                           to={`/projects/${project.id}`}
                           className="truncate block text-inherit rounded-sm hover:text-blue-700 underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
@@ -218,7 +218,7 @@ export const ProjectsPage: React.FC = () => {
                   </div>
                   <Dropdown
                     trigger={
-                      <button className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors flex-shrink-0">
+                      <button className="p-1.5 rounded-lg text-weak hover:text-dim hover:bg-inset transition-colors flex-shrink-0">
                         <MoreHorizontal className="h-4 w-4" />
                       </button>
                     }
@@ -231,7 +231,7 @@ export const ProjectsPage: React.FC = () => {
                 </div>
 
                 {project.description && (
-                  <p className="text-xs text-slate-500 mb-4 line-clamp-2">{project.description}</p>
+                  <p className="text-xs text-dim mb-4 line-clamp-2">{project.description}</p>
                 )}
 
                 <div className="space-y-3">
@@ -242,7 +242,7 @@ export const ProjectsPage: React.FC = () => {
                     size="md"
                     color={progress === 100 ? 'bg-green-500' : 'bg-blue-500'}
                   />
-                  <div className="flex items-center justify-between text-xs text-slate-500">
+                  <div className="flex items-center justify-between text-xs text-dim">
                     <div className="flex items-center gap-1">
                       <CheckSquare className="h-3.5 w-3.5" />
                       {project.completed_task_count}/{project.task_count} tasks
@@ -257,7 +257,7 @@ export const ProjectsPage: React.FC = () => {
                   {project.members && project.members.length > 0 && (
                     <div className="flex items-center gap-2">
                       <AvatarGroup users={project.members} max={4} />
-                      <span className="text-xs text-slate-500 flex items-center gap-1">
+                      <span className="text-xs text-dim flex items-center gap-1">
                         <Users className="h-3.5 w-3.5" />
                         {project.members.length}
                       </span>

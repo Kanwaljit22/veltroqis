@@ -33,7 +33,7 @@ export const Tabs: React.FC<TabsProps> = ({
               'px-3 py-1.5 text-sm rounded-lg font-medium transition-colors flex items-center gap-1.5',
               activeTab === tab.id
                 ? 'bg-slate-900 text-white'
-                : 'text-slate-600 hover:bg-slate-100'
+                : 'text-dim hover:bg-inset'
             )}
           >
             {tab.label}
@@ -42,8 +42,8 @@ export const Tabs: React.FC<TabsProps> = ({
                 className={cn(
                   'text-xs px-1.5 py-0.5 rounded-full font-medium',
                   activeTab === tab.id
-                    ? 'bg-white/20 text-white'
-                    : 'bg-slate-200 text-slate-600'
+                    ? 'bg-surface/20 text-white'
+                    : 'bg-slate-200 text-dim'
                 )}
               >
                 {tab.count}
@@ -57,7 +57,7 @@ export const Tabs: React.FC<TabsProps> = ({
 
   if (variant === 'underline') {
     return (
-      <div className={cn('flex border-b border-slate-200', className)}>
+      <div className={cn('flex border-b border-base', className)}>
         {tabs.map((tab) => (
           <button
             key={tab.id}
@@ -65,13 +65,13 @@ export const Tabs: React.FC<TabsProps> = ({
             className={cn(
               'px-4 py-2.5 text-sm font-medium transition-colors relative flex items-center gap-1.5',
               activeTab === tab.id
-                ? 'text-slate-900 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-slate-900'
-                : 'text-slate-500 hover:text-slate-700'
+                ? 'text-hi after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-slate-900'
+                : 'text-dim hover:text-body'
             )}
           >
             {tab.label}
             {tab.count !== undefined && (
-              <span className="bg-slate-100 text-slate-600 text-xs px-1.5 py-0.5 rounded-full">
+              <span className="bg-inset text-dim text-xs px-1.5 py-0.5 rounded-full">
                 {tab.count}
               </span>
             )}
@@ -83,7 +83,7 @@ export const Tabs: React.FC<TabsProps> = ({
 
   // boxed
   return (
-    <div className={cn('flex bg-slate-100 rounded-xl p-1 gap-1', className)}>
+    <div className={cn('flex bg-inset rounded-xl p-1 gap-1', className)}>
       {tabs.map((tab) => (
         <button
           key={tab.id}
@@ -91,8 +91,8 @@ export const Tabs: React.FC<TabsProps> = ({
           className={cn(
             'flex-1 px-4 py-2 text-sm font-medium rounded-lg transition-all',
             activeTab === tab.id
-              ? 'bg-white text-slate-900 shadow-sm'
-              : 'text-slate-500 hover:text-slate-700'
+              ? 'bg-surface text-hi shadow-sm'
+              : 'text-dim hover:text-body'
           )}
         >
           {tab.label}

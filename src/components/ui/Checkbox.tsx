@@ -30,13 +30,13 @@ export const Checkbox: React.FC<CheckboxProps> = ({
           'h-4 w-4 rounded flex items-center justify-center border transition-colors',
           checked
             ? 'bg-slate-900 border-slate-900'
-            : 'bg-white border-slate-300 hover:border-slate-400'
+            : 'bg-surface border-slate-300 hover:border-slate-400'
         )}
         onClick={() => !disabled && onChange?.(!checked)}
       >
         {checked && <Check className="h-2.5 w-2.5 text-white" strokeWidth={3} />}
       </div>
-      {label && <span className="text-sm text-slate-700">{label}</span>}
+      {label && <span className="text-sm text-body">{label}</span>}
     </label>
   );
 };

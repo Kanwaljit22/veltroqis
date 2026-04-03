@@ -93,8 +93,8 @@ export const AccessDenied: React.FC<AccessDeniedProps> = ({
     <div className="h-16 w-16 rounded-2xl bg-red-50 flex items-center justify-center mb-4">
       <ShieldOff className="h-8 w-8 text-red-400" />
     </div>
-    <h2 className="text-xl font-bold text-slate-900 mb-2">{title}</h2>
-    <p className="text-sm text-slate-500 max-w-md mb-6">{description}</p>
+    <h2 className="text-xl font-bold text-hi mb-2">{title}</h2>
+    <p className="text-sm text-dim max-w-md mb-6">{description}</p>
     {showBack && (
       <Button variant="outline" onClick={() => window.history.back()}>
         Go back

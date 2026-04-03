@@ -98,7 +98,7 @@ export const AvatarGroup: React.FC<AvatarGroupProps> = ({
       {remaining > 0 && (
         <div
           className={cn(
-            'flex items-center justify-center rounded-full ring-2 ring-white bg-slate-200 text-slate-600 font-medium',
+            'flex items-center justify-center rounded-full ring-2 ring-white bg-slate-200 text-dim font-medium',
             sizeMap[size],
             'text-xs'
           )}

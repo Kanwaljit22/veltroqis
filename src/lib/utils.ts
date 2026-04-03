@@ -135,12 +135,12 @@ export const STATUS_COLORS: Record<TaskStatus, string> = {
 };
 
 export const LABEL_LABELS: Record<TaskLabel, string> = {
-  bug: '🐞 Bug',
-  feature: '🚀 Feature',
-  enhancement: '⚙️ Enhancement',
-  design: '🎨 Design',
-  documentation: '📄 Docs',
-  hotfix: '🔥 Hotfix',
+  bug: 'Bug',
+  feature: 'Feature',
+  enhancement: 'Enhancement',
+  design: 'Design',
+  documentation: 'Documentation',
+  hotfix: 'Hotfix',
 };
 
 export const LABEL_COLORS: Record<TaskLabel, string> = {
