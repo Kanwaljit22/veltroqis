@@ -9,6 +9,10 @@ import type { Project, ProjectStatus, User } from '../types';
 
 // ─── Queries ──────────────────────────────────────────────────────────────────
 
+/** Fields selected whenever a User is embedded via a relationship join */
+const USER_FIELDS =
+  'id, full_name, email, role, status, avatar_url, joined_at, created_at, updated_at, designation, department, phone, location, bio';
+
 export function useProjects() {
   const { user } = useAuthStore();
   const userId = user?.id;
@@ -17,28 +21,35 @@ export function useProjects() {
   return useQuery({
     queryKey: QUERY_KEYS.projects(userId),
     queryFn: async (): Promise<Project[]> => {
-      const { data: projects, error } = await supabase
-        .from('projects')
-        .select('*')
-        .order('created_at', { ascending: false });
+      // All three requests run in parallel.
+      // lead and member users are embedded via PostgREST relationship joins,
+      // so no separate users fetch is needed.
+      const [
+        { data: projects, error },
+        { data: members },
+        { data: taskCounts },
+      ] = await Promise.all([
+        supabase
+          .from('projects')
+          .select(`*, lead:users!lead_id(${USER_FIELDS})`)
+          .order('created_at', { ascending: false }),
+        supabase
+          .from('project_members')
+          .select(`project_id, user_id, member:users(${USER_FIELDS})`),
+        supabase
+          .from('tasks')
+          .select('project_id, status'),
+      ]);
+
       if (error) {
         if (isSchemaError(error)) return [];
         throw new Error(error.message);
       }
 
-      const [{ data: users }, { data: members }, { data: taskCounts }] = await Promise.all([
-        supabase.from('users').select('*'),
-        supabase.from('project_members').select('project_id, user_id'),
-        supabase.from('tasks').select('project_id, status'),
-      ]);
-
-      const userMap: Record<string, User> = {};
-      (users ?? []).forEach((u) => { userMap[u.id] = u as User; });
-
       const hydratedProjects = (projects ?? []).map((p) => {
         const projectMembers = (members ?? [])
           .filter((m) => m.project_id === p.id)
-          .map((m) => userMap[m.user_id])
+          .map((m) => m.member as unknown as User)
           .filter(Boolean) as User[];
 
         const projectTasks = (taskCounts ?? []).filter((t) => t.project_id === p.id);
@@ -46,7 +57,7 @@ export function useProjects() {
         return {
           ...p,
           status: p.status as ProjectStatus,
-          lead: userMap[p.lead_id ?? ''] ?? null,
+          lead: (p.lead as unknown as User | null) ?? null,
           members: projectMembers,
           task_count: projectTasks.length,
           completed_task_count: projectTasks.filter((t) => t.status === 'done').length,
@@ -64,34 +75,41 @@ export function useProject(id: string) {
   return useQuery({
     queryKey: QUERY_KEYS.project(id),
     queryFn: async (): Promise<Project | null> => {
-      const { data: project, error } = await supabase
-        .from('projects')
-        .select('*')
-        .eq('id', id)
-        .maybeSingle();
+      // All three requests run in parallel; users embedded directly — no bulk users fetch.
+      const [
+        { data: project, error },
+        { data: members },
+        { data: taskCounts },
+      ] = await Promise.all([
+        supabase
+          .from('projects')
+          .select(`*, lead:users!lead_id(${USER_FIELDS})`)
+          .eq('id', id)
+          .maybeSingle(),
+        supabase
+          .from('project_members')
+          .select(`user_id, member:users(${USER_FIELDS})`)
+          .eq('project_id', id),
+        supabase
+          .from('tasks')
+          .select('status')
+          .eq('project_id', id),
+      ]);
+
       if (error) {
         if (isSchemaError(error) || isNotFoundError(error)) return null;
         throw new Error(error.message);
       }
       if (!project) return null;
 
-      const [{ data: users }, { data: members }, { data: taskCounts }] = await Promise.all([
-        supabase.from('users').select('*'),
-        supabase.from('project_members').select('user_id').eq('project_id', id),
-        supabase.from('tasks').select('status').eq('project_id', id),
-      ]);
-
-      const userMap: Record<string, User> = {};
-      (users ?? []).forEach((u) => { userMap[u.id] = u as User; });
-
       const projectMembers = (members ?? [])
-        .map((m) => userMap[m.user_id])
+        .map((m) => m.member as unknown as User)
         .filter(Boolean) as User[];
 
       return {
         ...project,
         status: project.status as ProjectStatus,
-        lead: userMap[project.lead_id ?? ''] ?? null,
+        lead: (project.lead as unknown as User | null) ?? null,
         members: projectMembers,
         task_count: (taskCounts ?? []).length,
         completed_task_count: (taskCounts ?? []).filter((t) => t.status === 'done').length,

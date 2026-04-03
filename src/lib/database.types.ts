@@ -71,7 +71,22 @@ export interface Database {
           updated_at?: string
         }
         Update: Partial<Database['public']['Tables']['projects']['Insert']>
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: 'projects_lead_id_fkey'
+            columns: ['lead_id']
+            isOneToOne: false
+            referencedRelation: 'users'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'projects_created_by_fkey'
+            columns: ['created_by']
+            isOneToOne: false
+            referencedRelation: 'users'
+            referencedColumns: ['id']
+          },
+        ]
       }
       tasks: {
         Row: {
@@ -333,7 +348,22 @@ export interface Database {
           created_at?: string
         }
         Update: Partial<Database['public']['Tables']['project_members']['Insert']>
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: 'project_members_project_id_fkey'
+            columns: ['project_id']
+            isOneToOne: false
+            referencedRelation: 'projects'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'project_members_user_id_fkey'
+            columns: ['user_id']
+            isOneToOne: false
+            referencedRelation: 'users'
+            referencedColumns: ['id']
+          },
+        ]
       }
     }
     Views: Record<string, never>
